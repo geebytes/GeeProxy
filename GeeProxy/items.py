@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2020-03-01 02:10:32
 @LastEditors: John
-@LastEditTime: 2020-03-01 11:34:05
+@LastEditTime: 2020-03-01 15:00:41
 @Description: 定义数据字段
 '''
 # -*- coding: utf-8 -*-
@@ -20,9 +20,11 @@ class GeeproxyItem(scrapy.Item):
     # name = scrapy.Field()
     
     # 代理协议
-    portocol = scrapy.Field()
+    protocol = scrapy.Field()
     
     ip = scrapy.Field()
     
     port = scrapy.Field()
+    
+    url = scrapy.Field()
     

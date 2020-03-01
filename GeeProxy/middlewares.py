@@ -7,6 +7,7 @@
 
 from scrapy import signals
 from scrapy.downloadermiddlewares.retry import RetryMiddleware
+from scrapy.downloadermiddlewares.useragent import UserAgentMiddleware
 from scrapy.utils.response import response_status_message
 from .utils.user_agent import UserAgent
 
@@ -138,13 +139,16 @@ class ProxyRetryMiddleware(RetryMiddleware):
             return self._retry(request, exception, spider)
 
 
-class UserAgentMiddleware(object):
+class RandomUserAgentMiddleware(UserAgentMiddleware):
     """
     提供UserAgent代理中间件
     """
+
     @classmethod
     def from_crawler(cls, crawler):
-        return cls(crawler)
+        return cls(
+            user_agent=UserAgent.random()
+        )
 
     def process_request(self, request, spider):
         # 设置请求头代理
