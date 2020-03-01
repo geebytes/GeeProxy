@@ -2,8 +2,8 @@
 @Author: John
 @Date: 2019-08-31 16:28:27
 @LastEditors: John
-@LastEditTime: 2020-03-01 15:41:34
-@Description: 
+@LastEditTime: 2020-03-02 00:01:12
+@Description: This module provides fake ua for all spiders.
 '''
 """
 This module provides fake ua for all spiders.

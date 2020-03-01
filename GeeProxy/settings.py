@@ -2,11 +2,12 @@
 @Author: John
 @Date: 2020-03-01 02:10:32
 @LastEditors: John
-@LastEditTime: 2020-03-01 18:47:22
+@LastEditTime: 2020-03-01 23:59:42
 @Description: 配置文件
 '''
 # -*- coding: utf-8 -*-
 
+import os
 # Scrapy settings for GeeProxy project
 #
 # For simplicity, this file contains only settings considered important or
@@ -60,7 +61,9 @@ COOKIES_ENABLED = False
 # Enable or disable downloader middlewares
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-    'GeeProxy.middlewares.RandomUserAgentMiddleware': 400,
+    'GeeProxy.middlewares.RandomUserAgentMiddleware': 543,
+    'GeeProxy.middlewares.ProxyRetryMiddleware': 543,
+    'GeeProxy.middlewares.ProxyMiddleware':542,
     # 'GeeProxy.middlewares.GeeproxyDownloaderMiddleware': 543,
     'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
 }
@@ -132,6 +135,13 @@ REDIS_SERVER = {
     "host": "",
     "port": ""
 }
+
+LOG_PATH = os.path.abspath(os.path.dirname(__file__)) + '/logs'
+if not os.path.exists(LOG_PATH):
+   os.mkdir(LOG_PATH)
+   
+HTTPERROR_ALLOWED_CODES = [403]
+RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 408, 429, 403]
 try:
     from dev_config import *
 except:
