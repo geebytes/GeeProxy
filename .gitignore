@@ -6,3 +6,4 @@ base.html
 .scrapy
 dev_config.py
 *.pyc
+logs
