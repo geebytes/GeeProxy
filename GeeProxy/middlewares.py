@@ -4,13 +4,17 @@
 #
 # See documentation in:
 # https://doc.scrapy.org/en/latest/topics/spider-middleware.html
-
+import random
+import time
 from scrapy import signals
 from scrapy.downloadermiddlewares.retry import RetryMiddleware
 from scrapy.downloadermiddlewares.useragent import UserAgentMiddleware
 from scrapy.utils.response import response_status_message
 from .utils.user_agent import UserAgent
 from .utils.redis_cli import client
+from .utils.logger import middlewares_logger
+from .utils.tools import get_domain
+from GeeProxy.settings import PROXY_THRESHOLD, PROXY_VALIDATE_TIME
 
 class GeeproxySpiderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
@@ -27,7 +31,19 @@ class GeeproxySpiderMiddleware(object):
     def process_spider_input(self, response, spider):
         # Called for each response that goes through the spider
         # middleware and into the spider.
-
+        url = response.url
+        # middlewares_logger.info(
+        #     "spider request meta {} response meta {}".format(response.request.meta, response.meta))
+        proxy = response.meta['proxy']
+        protocol = response.meta['protocol']
+        domain = get_domain(url)
+        now_time = int(round(time.time() * 1000))
+        key = "{}:{}".format(protocol,domain)
+        value = {proxy: now_time}
+        middlewares_logger.info("update proxy {} timestamp of '{}' with value '{}'".format(
+            proxy, key,value))
+        # 更新时间戳
+        client.zadd(key,value)
         # Should return None or raise an exception.
         return None
 
@@ -37,6 +53,7 @@ class GeeproxySpiderMiddleware(object):
 
         # Must return an iterable of Request, dict or Item objects.
         for i in result:
+            middlewares_logger.info("spider output {}".format(i))
             yield i
 
     def process_spider_exception(self, response, exception, spider):
@@ -115,24 +132,54 @@ class ProxyMiddleware(object):
     def process_request(self, request, spider):
         # print(type(client.srandmember("https")))
         protocol = request.url.split(":")[0]
-        protocol = client.srandmember(protocol)
-        print("add proxy %s" % str(protocol, encoding='utf-8'))
-        if protocol:
-            request.meta['proxy'] = str(protocol, encoding='utf-8')
+        options = {"http": "https", "https": "http"}
+        key = ""
+        domain = ""
+        number = 0
+        def get_proxy_number():
+            nonlocal domain
+            nonlocal key
+            nonlocal number
+            domain = get_domain(request.url)
+            key = "{}:{}".format(protocol, domain)
+            number = client.zcard(key)
+        get_proxy_number()
+        if not number:
+            # 当前的协议没有对应的代理则切换代理的协议
+            protocol = options[protocol]
+            get_proxy_number()
+        index = random.randint(0, number - 1)
+        proxy = client.zrange(key, index, index)
+        if proxy:
+            proxy = proxy[0]
+            middlewares_logger.info("add proxy %s" %
+                                    str(proxy, encoding='utf-8'))
+            request.meta['proxy'] = str(proxy, encoding='utf-8')
+            request.meta['protocol'] = protocol
+        return None
 
 
 class ProxyRetryMiddleware(RetryMiddleware):
-    def delete_proxy(self, proxy):
+    def delete_proxy(self, url, proxy):
         if proxy:
-            protocol = proxy.split(":")[0]
-            print("delete proxy %s" % proxy)
-            client.srem(protocol,proxy)
+            domain = get_domain(url)
+            key = "fail_proxy"
+            value = "{}:{}".format(proxy,domain)
+            count = client.zscore(key, value)
+            if count != PROXY_THRESHOLD:
+                client.zincrby(key, 1, value)
+            else:
+                protocol = proxy.split(":")[0]
+                domain = get_domain(url)
+                middlewares_logger.info("delete proxy %s" % value)
+                client.zrem("{}:{}".format(protocol, domain), proxy)
+                client.zrem(key,value)
 
     def process_response(self, request, response, spider):
         if response.status in self.retry_http_codes:
             reason = response_status_message(response.status)
             # 删除该代理
-            self.delete_proxy(request.meta.get('proxy', False))
+            self.delete_proxy(request.url, request.meta.get('proxy', False))
             return self._retry(request, reason, spider) or response
         return response
 
@@ -140,8 +187,8 @@ class ProxyRetryMiddleware(RetryMiddleware):
         if isinstance(exception, self.EXCEPTIONS_TO_RETRY) \
                 and not request.meta.get('dont_retry', False):
             # 删除该代理
-            self.delete_proxy(request.meta.get('proxy', False))
-            print('连接异常, 进行重试...')
+            self.delete_proxy(request.url, request.meta.get('proxy', False))
+            middlewares_logger.info('连接异常, 进行重试...')
             request.headers['User-Agent'] = UserAgent.random()
             return self._retry(request, exception, spider)
 
@@ -161,9 +208,3 @@ class RandomUserAgentMiddleware(UserAgentMiddleware):
         # 设置请求头代理
         request.headers['User-Agent'] = UserAgent.random()
         
-    # def process_exception(self, request, exception, spider):
-    #     if isinstance(exception, self.EXCEPTIONS_TO_RETRY) \
-    #             and not request.meta.get('dont_retry', False):
-    #         request.headers['User-Agent'] = UserAgent.random()
-    #         print('连接异常, 进行重试...')
-    #         return self._retry(request, exception, spider)

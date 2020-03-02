@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2020-03-01 17:57:02
 @LastEditors: John
-@LastEditTime: 2020-03-02 00:04:20
+@LastEditTime: 2020-03-02 15:37:22
 @Description: This module provides log handle module
 '''
 
@@ -10,8 +10,6 @@ import os
 import json
 import logging.config
 from GeeProxy.settings import LOG_PATH
-
-
 
 config = {
     "version": 1,
@@ -89,6 +87,7 @@ setup_logging()
 crawler_logger = logging.getLogger('cralwer')
 proxy_validator = logging.getLogger('ProxyValidator')
 middlewares_logger = logging.getLogger('middlewares')
+pipeline_logger = logging.getLogger('pipeline_logger')
 
 
         

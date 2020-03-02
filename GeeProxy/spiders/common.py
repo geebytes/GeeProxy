@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2020-03-01 11:29:03
 @LastEditors: John
-@LastEditTime: 2020-03-01 20:21:59
+@LastEditTime: 2020-03-02 20:12:41
 @Description: 
 '''
 
@@ -32,9 +32,14 @@ class BaseSpider(scrapy.Spider):
             yield item
 
     def common_parse(self, response, table_xpath_expression, ip_expression, port_expression, protocol_xpath_expression):
+        items = list()
         try:
             # 数据表
-            table = response.xpath(table_xpath_expression).extract()[0]
+            table = response.xpath(table_xpath_expression).extract()
+            if not table:
+                crawler_logger.error({"url": response.url, "info": "获取表格失败", "table_xpath_expression":table_xpath_expression})
+                return items
+            table = table[0]
             # ip列表
             ips = Selector(text=table).xpath(ip_expression).extract()
             # 端口
@@ -44,7 +49,6 @@ class BaseSpider(scrapy.Spider):
                 protocol_xpath_expression).extract()
             if port_expression:
                ports = Selector(text=table).xpath(port_expression).extract()
-            items = list()
         except Exception as e:
             crawler_logger.error({"url":response.url,"error":e.args})
             return items
@@ -64,7 +68,7 @@ class BaseSpider(scrapy.Spider):
                     items.append(GeeproxyItem(
                         url=self.construct_proxy_url("http", ip, port), ip=ip, protocol="http", port=port))
         except Exception as e:
-            crawler_logger.error({"url": response.url, "error": e.args})
+            crawler_logger.error({"url": response.url, "error": e.args,"ips":ips})
             return items
         return items
 

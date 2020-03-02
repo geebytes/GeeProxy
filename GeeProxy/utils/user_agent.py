@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2019-08-31 16:28:27
 @LastEditors: John
-@LastEditTime: 2020-03-02 00:01:12
+@LastEditTime: 2020-03-02 16:55:38
 @Description: This module provides fake ua for all spiders.
 '''
 """
@@ -42,11 +42,11 @@ class UserAgent(object):
             except:
                 logger.error(
                     'Error initializing UserAgent using fake_useragent.')
-                logger.info('Falling back to default User-Agent.')
+                logger.debug('Falling back to default User-Agent.')
                 cls.ua = False
                 return UserAgent.random()
         elif cls.ua is not False:
-            logger.info(cls.ua.random)
+            logger.debug(cls.ua.random)
             return cls.ua.random
         else:
             # specify a default user agent

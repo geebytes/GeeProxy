@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2020-03-01 02:10:32
 @LastEditors: John
-@LastEditTime: 2020-03-01 23:59:42
+@LastEditTime: 2020-03-02 20:31:06
 @Description: 配置文件
 '''
 # -*- coding: utf-8 -*-
@@ -54,9 +54,9 @@ COOKIES_ENABLED = False
 
 # Enable or disable spider middlewares
 # See https://doc.scrapy.org/en/latest/topics/spider-middleware.html
-#SPIDER_MIDDLEWARES = {
-#    'GeeProxy.middlewares.GeeproxySpiderMiddleware': 543,
-#}
+SPIDER_MIDDLEWARES = {
+    'GeeProxy.middlewares.GeeproxySpiderMiddleware': 543,
+}
 
 # Enable or disable downloader middlewares
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
@@ -70,9 +70,10 @@ DOWNLOADER_MIDDLEWARES = {
 
 # Enable or disable extensions
 # See https://doc.scrapy.org/en/latest/topics/extensions.html
-#EXTENSIONS = {
-#    'scrapy.extensions.telnet.TelnetConsole': None,
-#}
+EXTENSIONS = {
+    'scrapy.extensions.telnet.TelnetConsole': None,
+    'GeeProxy.extension.SpiderOpenCloseHandler':500
+}
 
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
@@ -126,7 +127,7 @@ REDIS_NODES = [
         'host': '192.168.0.3', 'port': 7005
     },
 ]
-
+REDIS_MASTER_NODES = REDIS_NODES
 # redis密码
 REDIS_PASSWORD = ""
 
@@ -142,6 +143,42 @@ if not os.path.exists(LOG_PATH):
    
 HTTPERROR_ALLOWED_CODES = [403]
 RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 408, 429, 403]
+
+# 校验器，校验目标及结果存储键值
+VAILDATORS = {
+    "http:www.xiladaili.com": "http://www.xiladaili.com",
+    "https:www.xiladaili.com": "http://www.xiladaili.com",
+    "http:www.xicidaili.com": "https://www.xicidaili.com",
+    "https:www.xicidaili.com": "https://www.xicidaili.com",
+    "http:www.kuaidaili.com": "https://www.kuaidaili.com",
+    "https:www.kuaidaili.com": "https://www.kuaidaili.com",
+    "http:httpbin.org": "http://httpbin.org",
+    "https:httpbin.org": "https://httpbin.org",
+}
+# 校验器代理请求超时时间
+VAILDATORS_TIMEOUT = 5
+# 校验器的代理尝试重连次数
+VAILDATORS_RETRY = 3
+# 代理请求失败的最大次数
+PROXY_THRESHOLD = 5
+# 定时校验任务时间间隔
+PROXY_VALIDATE_TIME = 10 * 60
+
+# 使用的哈希函数数，默认为6
+BLOOMFILTER_HASH_NUMBER = 6
+
+# Bloomfilter使用的Redis内存位，30表示2 ^ 30 = 128MB，默认为22 (1MB 可去重130W URL)
+BLOOMFILTER_BIT = 22
+
+# 不清空redis队列
+SCHEDULER_PERSIST = False
+# 调度队列
+SCHEDULER = "scrapy_redis_cluster.scheduler.Scheduler"
+# 去重
+DUPEFILTER_CLASS = "scrapy_redis_cluster.dupefilter.RFPDupeFilter"
+# queue
+SCHEDULER_QUEUE_CLASS = 'scrapy_redis_cluster.queue.PriorityQueue'
+
 try:
     from dev_config import *
 except:
