@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2019-08-31 16:28:27
 @LastEditors: John
-@LastEditTime: 2020-03-02 16:55:38
+@LastEditTime: 2020-03-02 23:26:57
 @Description: This module provides fake ua for all spiders.
 '''
 """
@@ -46,7 +46,7 @@ class UserAgent(object):
                 cls.ua = False
                 return UserAgent.random()
         elif cls.ua is not False:
-            logger.debug(cls.ua.random)
+            # logger.debug(cls.ua.random)
             return cls.ua.random
         else:
             # specify a default user agent

@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2020-03-01 17:13:49
 @LastEditors: John
-@LastEditTime: 2020-03-02 20:06:45
+@LastEditTime: 2020-03-03 21:27:55
 @Description: 爬虫启动脚本
 '''
 
@@ -14,12 +14,12 @@ from GeeProxy.spiders.common import BaseSpider
 from GeeProxy.spiders.rules import CRAWL_RULES
 from GeeProxy.utils.logger import crawler_logger
 
-def crawl_run():
+
+def crawl_runner():
     crawler_logger.debug("启动爬虫")
     process = CrawlerProcess(get_project_settings())
-    # process.crawl(BaseSpider, **CRAWL_RULES[2])
-    # process.crawl(BaseSpider, **CRAWL_RULES[1])
-    process.crawl(BaseSpider, **CRAWL_RULES[0])
+    for crawl in CRAWL_RULES:
+        process.crawl(BaseSpider, **crawl)
     process.start()
 
-crawl_run()
+# crawl_run()

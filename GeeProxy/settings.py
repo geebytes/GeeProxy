@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2020-03-01 02:10:32
 @LastEditors: John
-@LastEditTime: 2020-03-02 20:31:06
+@LastEditTime: 2020-03-03 23:15:34
 @Description: 配置文件
 '''
 # -*- coding: utf-8 -*-
@@ -35,7 +35,7 @@ ROBOTSTXT_OBEY = False
 # Configure a delay for requests for the same website (default: 0)
 # See https://doc.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-#DOWNLOAD_DELAY = 3
+DOWNLOAD_DELAY = 5
 # The download delay setting will honor only one of:
 #CONCURRENT_REQUESTS_PER_DOMAIN = 16
 #CONCURRENT_REQUESTS_PER_IP = 16
@@ -141,28 +141,34 @@ LOG_PATH = os.path.abspath(os.path.dirname(__file__)) + '/logs'
 if not os.path.exists(LOG_PATH):
    os.mkdir(LOG_PATH)
    
-HTTPERROR_ALLOWED_CODES = [403]
+HTTPERROR_ALLOWED_CODES = [403,503]
 RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 408, 429, 403]
-
+# ITEM 对象存储键
+ITEM_HASH_KEY = "geeproxy:{proxy}:{domain}"
+PROXY_KEY_PATTERN = "geeproxy:*"
+# 待校验消息队列
+VALIDATE_QUEUE_KEY = "vaildate:proxy"
+# 校验消息发布/订阅频道
+VALIDATE_CHANNEL = "vaildators"
+# 校验消息的内容
+VALIDATE_MSG = "vaildators start"
 # 校验器，校验目标及结果存储键值
 VAILDATORS = {
-    "http:www.xiladaili.com": "http://www.xiladaili.com",
-    "https:www.xiladaili.com": "http://www.xiladaili.com",
-    "http:www.xicidaili.com": "https://www.xicidaili.com",
-    "https:www.xicidaili.com": "https://www.xicidaili.com",
-    "http:www.kuaidaili.com": "https://www.kuaidaili.com",
-    "https:www.kuaidaili.com": "https://www.kuaidaili.com",
-    "http:httpbin.org": "http://httpbin.org",
-    "https:httpbin.org": "https://httpbin.org",
+    "proxy:www.xiladaili.com": "http://www.xiladaili.com",
+    "proxy:www.xicidaili.com": "https://www.xicidaili.com",
+    "proxy:www.kuaidaili.com": "https://www.kuaidaili.com",
+    "proxy:http": "https://httpbin.org",
 }
 # 校验器代理请求超时时间
-VAILDATORS_TIMEOUT = 5
+VAILDATORS_TIMEOUT = 10
 # 校验器的代理尝试重连次数
 VAILDATORS_RETRY = 3
 # 代理请求失败的最大次数
 PROXY_THRESHOLD = 5
 # 定时校验任务时间间隔
 PROXY_VALIDATE_TIME = 10 * 60
+# 允许校验代理请求的最大延迟时间 s
+PROXY_REQUEST_DELAY = 10
 
 # 使用的哈希函数数，默认为6
 BLOOMFILTER_HASH_NUMBER = 6
@@ -178,6 +184,7 @@ SCHEDULER = "scrapy_redis_cluster.scheduler.Scheduler"
 DUPEFILTER_CLASS = "scrapy_redis_cluster.dupefilter.RFPDupeFilter"
 # queue
 SCHEDULER_QUEUE_CLASS = 'scrapy_redis_cluster.queue.PriorityQueue'
+
 
 try:
     from dev_config import *

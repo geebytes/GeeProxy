@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2020-03-01 11:29:03
 @LastEditors: John
-@LastEditTime: 2020-03-02 20:12:41
+@LastEditTime: 2020-03-02 23:36:34
 @Description: 
 '''
 
@@ -17,7 +17,7 @@ class BaseSpider(scrapy.Spider):
     
     def __init__(self, *args, **kwargs):
         
-        self.name = 'GeeProxy'
+        self.name = kwargs["name"]
         self.allowed_domains = kwargs["allowed_domains"]
         self.start_urls = kwargs["start_urls"]
         self.table_xpath_expression = kwargs["table_xpath_expression"]

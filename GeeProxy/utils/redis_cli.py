@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2020-03-01 11:43:19
 @LastEditors: John
-@LastEditTime: 2020-03-02 21:57:02
+@LastEditTime: 2020-03-03 14:55:36
 @Description: This module provides redis connect pool sigleton client
 '''
 from rediscluster import RedisCluster
@@ -27,7 +27,8 @@ class RedisSingleton(ClusterConnectionPool, Redis):
         return cls._instance
 
 client = RedisSingleton(startup_nodes=REDIS_NODES,
-                        skip_full_coverage_check=True)
+                        skip_full_coverage_check=True,
+                        decode_responses = True)
 # pipeline = client.pipeline()
     
     
