@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2020-03-02 18:17:27
 @LastEditors: John
-@LastEditTime: 2020-03-04 23:07:53
+@LastEditTime: 2020-03-05 00:41:22
 @Description: 调度器
 '''
 
@@ -18,7 +18,6 @@ from GeeProxy.validators.vaildate_pub import vaildate_pub
 from GeeProxy.crawls.crawl import crawl_runner
 from GeeProxy.settings import PROXY_VALIDATE_TIME, PROXY_UPDATE_TIME
 from GeeProxy.utils.logger import scheduler_logger
-
 
 # def exit_process(process):
 #     """退出子进程"""
@@ -38,7 +37,7 @@ def run_crawl():
     crawl_runner()
 
 
-def run_validate_pub(is_master=False, crawl=True, vaildator=True):
+def run_validate_pub():
     '''
         待校验代理入队列
     '''
@@ -58,13 +57,11 @@ def run_validate_subscribe():
     subscribe_validator()
 
 
-def run_cronjob(master, crawl):
-    scheduler_logger.info(
-        "Starting runs cronjob process with PID {}.".format(
-            os.getpid()))
+def run_cronjob(master, crawl, vaildator):
+    scheduler_logger.info("Starting runs cronjob process with PID {}.".format(
+        os.getpid()))
     sched = BlockingScheduler()
-    scheduler_logger.info("This node running as the slave role")
-    if master:
+    if vaildator and master:
         sched.add_job(run_validate_pub,
                       'interval',
                       seconds=PROXY_VALIDATE_TIME)
@@ -81,25 +78,31 @@ def run_cronjob(master, crawl):
 
 
 @click.command()
-@click.option("--master/--slave",
-              default=False,
-              help="Set master node",
-              is_flag=True)
+@click.option(
+    "--master/--slave",
+    default=False,
+    help="Set master node and '--vaildator' must be add.",
+)
 @click.option("--crawl/--no-crawl",
               default=True,
-              help="Only run crawl process",
-              is_flag=True)
-@click.option("--vaildator/--no-vaildator",
-              default=True,
-              help="Only run proxy vailator process",
-              is_flag=True)
+              help="Do you run a crawler?")
+@click.option(
+    "--vaildator/--no-vaildator",
+    default=True,
+    help=
+    "Do you run a proxy vailator?\nIf it is used as a message queue publisher, be sure to add the '--master' parameter.",
+)
 def scheduleder(master, crawl, vaildator):
     '''
        主调度器
     '''
+    scheduler_logger.info(
+        "Master value is {},crawl value is {},vaildator value is {}".format(
+            master, crawl, vaildator))
     pool = mp.Pool(5)
-    pool.apply_async(run_validate_subscribe)
-    pool.apply_async(run_cronjob, (master, crawl))
+    if not master:
+        pool.apply_async(run_validate_subscribe)
+    pool.apply_async(run_cronjob, (master, crawl, vaildator))
     pool.close()
     pool.join()
 
