@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2020-03-02 17:14:07
 @LastEditors: John
-@LastEditTime: 2020-03-05 01:03:42
+@LastEditTime: 2020-03-05 01:09:20
 @Description: 定时校验任务
 '''
 import asyncio
@@ -80,12 +80,13 @@ def subscribe_validator():
     """
     p = client.pubsub()
     p.subscribe(VALIDATE_CHANNEL)
-    for msg in p.listen():
-        if msg['type'] == 'message':
-            proxy_validator.info(
-                "Process has got a message '{}' and has started \
-                 validator task.".format(msg["data"]))
-            validate_runner()
+    while True:
+        for msg in p.listen():
+            if msg['type'] == 'message':
+                proxy_validator.info(
+                    "Process has got a message '{}' and has started \
+                     validator task.".format(msg["data"]))
+                validate_runner()
 
     # while True:
     #     message = p.get_message()
