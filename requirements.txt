@@ -7,7 +7,7 @@ redis==3.0.1
 redis-py-cluster==2.0.0
 requests==2.23.0
 Scrapy==1.8.0
-scrapy-redis-cluster==0.6
+git+https://github.com/geebytes/scrapy_redis_cluster.git@master
 six==1.14.0
 Twisted==19.10.0
 tzlocal==2.0.0

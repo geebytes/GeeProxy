@@ -10,3 +10,5 @@ logs
 *.cover_zset_to_set.py
 test.py
 *.pyc
+__pycache__/
+.vscode
