@@ -4,17 +4,16 @@
 #
 # See documentation in:
 # https://doc.scrapy.org/en/latest/topics/spider-middleware.html
-import random
-import time
 from scrapy import signals
 from scrapy.downloadermiddlewares.retry import RetryMiddleware
 from scrapy.downloadermiddlewares.useragent import UserAgentMiddleware
 from scrapy.utils.response import response_status_message
+from .client.client import AvailableProxy
 from .utils.user_agent import UserAgent
 from .utils.redis_cli import client
 from .utils.logger import middlewares_logger
 from .utils.tools import get_domain
-from GeeProxy.settings import PROXY_THRESHOLD, PROXY_VALIDATE_TIME, ITEM_HASH_KEY
+from GeeProxy.settings import ITEM_HASH_KEY
 
 
 class GeeproxySpiderMiddleware(object):
@@ -33,17 +32,16 @@ class GeeproxySpiderMiddleware(object):
         # Called for each response that goes through the spider
         # middleware and into the spider.
         url = response.url
-        # middlewares_logger.info(
-        #     "spider request meta {} response meta {}".format(response.request.meta, response.meta))
         if 'proxy' in response.meta:
             proxy = response.meta['proxy']
             delay = response.meta['download_latency']
             domain = get_domain(url)
             key = ITEM_HASH_KEY.format(proxy=proxy, domain=domain)
-            middlewares_logger.info("update proxy {} delay of '{}' with value '{}'".format(
-                proxy, key, delay))
+            middlewares_logger.info(
+                "update proxy {} delay of '{}' with value '{}'".format(
+                    proxy, key, delay))
             # 更新延迟
-            client.hset(key, "delay",delay)
+            client.hset(key, "delay", delay)
             # Should return None or raise an exception.
         return None
 
@@ -128,14 +126,13 @@ class ProxyMiddleware(object):
     """
     提供IP代理中间件
     """
-
     def process_request(self, request, spider):
         # domain = get_domain(request.url)
         # key = "proxy:{}".format(domain)
         key = "proxy:http"
         number = client.scard(key)
-        middlewares_logger.info(
-            'There are {} proxies in "{}"'.format(number, key))
+        middlewares_logger.info('There are {} proxies in "{}"'.format(
+            number, key))
         proxy = client.srandmember(key)
         if proxy:
             middlewares_logger.info("add proxy %s" % proxy)
@@ -148,17 +145,8 @@ class ProxyRetryMiddleware(RetryMiddleware):
     def delete_proxy(self, url, proxy):
         if proxy:
             domain = get_domain(url)
-            key = "fail_proxy"
-            value = "{}:{}".format(proxy, domain)
-            count = client.zscore(key, value)
-            if count != PROXY_THRESHOLD - 1:
-                client.zincrby(key, 1, value)
-            else:
-                domain = get_domain(url)
-                middlewares_logger.info("delete proxy %s" % value)
-                client.srem("proxy:{}".format(domain), proxy)
-                client.delete(ITEM_HASH_KEY.format(proxy=proxy, domain=domain))
-                client.zrem(key, value)
+            proxy_client = AvailableProxy()
+            proxy_client.delete_proxy(proxy, domain)
 
     def process_response(self, request, response, spider):
         if response.status in self.retry_http_codes:
@@ -182,12 +170,9 @@ class RandomUserAgentMiddleware(UserAgentMiddleware):
     """
     提供UserAgent代理中间件
     """
-
     @classmethod
     def from_crawler(cls, crawler):
-        return cls(
-            user_agent=UserAgent.random()
-        )
+        return cls(user_agent=UserAgent.random())
 
     def process_request(self, request, spider):
         # 设置请求头代理

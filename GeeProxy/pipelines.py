@@ -2,8 +2,8 @@
 @Author: John
 @Date: 2020-03-01 02:10:32
 @LastEditors: John
-@LastEditTime: 2020-03-04 13:12:41
-@Description: 
+@LastEditTime: 2020-03-04 20:37:07
+@Description: 数据处理
 '''
 
 # -*- coding: utf-8 -*-
@@ -25,7 +25,6 @@ class GeeproxyPipeline(object):
     '''
     代理可用性校验
     '''
-
     def __init__(self):
         self.loop = asyncio.get_event_loop()
         asyncio.set_event_loop(self.loop)
@@ -45,12 +44,13 @@ class GeeproxyPipeline(object):
                 mapping["update"] = timestamp
                 mapping["available"] = 1
                 mapping["delay"] = r["delay"]
-                key = ITEM_HASH_KEY.format(proxy=item["url"], domain=get_domain(r["dst"]))
+                key = ITEM_HASH_KEY.format(proxy=item["url"],
+                                           domain=get_domain(r["dst"]))
                 client.hmset(key, mapping)
-                pipeline_logger.info(
-                    "Cache proxy '{}' to '{}'".format(key, mapping))
-            pipeline_logger.info(
-                "Cache proxy '{}' to '{}'".format(item["url"], r["cache_key"]))
+                pipeline_logger.info("Cache proxy '{}' to '{}'".format(
+                    key, mapping))
+            pipeline_logger.info("Cache proxy '{}' to '{}'".format(
+                item["url"], r["cache_key"]))
         return item
 
     @staticmethod
@@ -60,8 +60,8 @@ class GeeproxyPipeline(object):
         for k, v in VAILDATORS.items():
             vaildator = ProxyValidator()
             # 开始校验
-            tasks.append(vaildator.check_proxy(
-                proxy=proxy, dst=v, cache_key=k))
+            tasks.append(vaildator.check_proxy(proxy=proxy, dst=v,
+                                               cache_key=k))
         done, _ = await asyncio.wait(tasks)
         for d in done:
             check_result = d.result()

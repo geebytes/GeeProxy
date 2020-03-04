@@ -2,14 +2,14 @@
 @Author: John
 @Date: 2020-03-01 16:11:59
 @LastEditors: John
-@LastEditTime: 2020-03-04 10:31:45
+@LastEditTime: 2020-03-04 18:02:29
 @Description: 爬取规则
 '''
 
 CRAWL_RULES = [
     {
         "name": "xiladaili.com",
-        "start_urls": ["http://www.xiladaili.com/https/%d/" % i for i in range(1,20)] + 
+        "start_urls": ["http://www.xiladaili.com/https/%d/" % i for i in range(1, 20)] +
         ["http://www.xiladaili.com/gaoni/%d/" % i for i in range(1, 20)],
         "allowed_domains": ['www.xiladaili.com'],
         "table_xpath_expression": "//table[@class='fl-table']",

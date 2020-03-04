@@ -18,14 +18,12 @@ import scrapy
 class GeeproxyItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
-    
+
     # 代理协议
     protocol = scrapy.Field()
-    
+
     ip = scrapy.Field()
-    
+
     port = scrapy.Field()
-    
+
     url = scrapy.Field()
-    
-    

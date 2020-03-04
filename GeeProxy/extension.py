@@ -2,8 +2,8 @@
 @Author: John
 @Date: 2020-03-02 11:20:45
 @LastEditors: John
-@LastEditTime: 2020-03-02 11:25:26
-@Description: 
+@LastEditTime: 2020-03-04 20:36:40
+@Description: 扩展
 '''
 
 from scrapy import signals
@@ -11,8 +11,8 @@ from scrapy.exceptions import NotConfigured
 from .utils.logger import crawler_logger
 from .utils.redis_cli import client
 
-class SpiderOpenCloseHandler(object):
 
+class SpiderOpenCloseHandler(object):
     def __init__(self, item_count):
         self.item_count = item_count
         self.items_scraped = 0
@@ -31,10 +31,10 @@ class SpiderOpenCloseHandler(object):
         ext = cls(item_count)
 
         # connect the extension object to signals
-        crawler.signals.connect(
-            ext.spider_opened, signal=signals.spider_opened)
-        crawler.signals.connect(
-            ext.spider_closed, signal=signals.spider_closed)
+        crawler.signals.connect(ext.spider_opened,
+                                signal=signals.spider_opened)
+        crawler.signals.connect(ext.spider_closed,
+                                signal=signals.spider_closed)
         crawler.signals.connect(ext.item_scraped, signal=signals.item_scraped)
 
         # return the extension object

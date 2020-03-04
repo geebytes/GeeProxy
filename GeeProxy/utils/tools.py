@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2020-03-02 02:44:01
 @LastEditors: John
-@LastEditTime: 2020-03-02 16:00:35
+@LastEditTime: 2020-03-04 17:23:57
 @Description: 
 '''
 from urllib.parse import urlparse
@@ -21,5 +21,6 @@ def get_key(protocol,domain,prefix=None):
 
 def get_proxy(key):
     pass
+
 
 

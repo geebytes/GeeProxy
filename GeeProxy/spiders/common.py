@@ -2,8 +2,8 @@
 @Author: John
 @Date: 2020-03-01 11:29:03
 @LastEditors: John
-@LastEditTime: 2020-03-02 23:36:34
-@Description: 
+@LastEditTime: 2020-03-04 20:44:37
+@Description: 代理抓取主程序
 '''
 
 # -*- coding: utf-8 -*-
@@ -14,9 +14,8 @@ from GeeProxy.utils.logger import crawler_logger
 
 
 class BaseSpider(scrapy.Spider):
-    
     def __init__(self, *args, **kwargs):
-        
+
         self.name = kwargs["name"]
         self.allowed_domains = kwargs["allowed_domains"]
         self.start_urls = kwargs["start_urls"]
@@ -26,18 +25,27 @@ class BaseSpider(scrapy.Spider):
         self.protocol_xpath_expression = kwargs["protocol_xpath_expression"]
 
     def parse(self, response):
-        items = self.common_parse(
-            response, self.table_xpath_expression, self.ip_expression, self.port_expression, self.protocol_xpath_expression)
+        items = self.common_parse(response, self.table_xpath_expression,
+                                  self.ip_expression, self.port_expression,
+                                  self.protocol_xpath_expression)
         for item in items:
             yield item
 
-    def common_parse(self, response, table_xpath_expression, ip_expression, port_expression, protocol_xpath_expression):
+    def common_parse(self, response, table_xpath_expression, ip_expression,
+                     port_expression, protocol_xpath_expression):
         items = list()
         try:
             # 数据表
             table = response.xpath(table_xpath_expression).extract()
             if not table:
-                crawler_logger.error({"url": response.url, "info": "获取表格失败", "table_xpath_expression":table_xpath_expression})
+                crawler_logger.error({
+                    "url":
+                    response.url,
+                    "info":
+                    "获取表格失败",
+                    "table_xpath_expression":
+                    table_xpath_expression
+                })
                 return items
             table = table[0]
             # ip列表
@@ -45,12 +53,12 @@ class BaseSpider(scrapy.Spider):
             # 端口
             ports = ""
             # 协议
-            protocols = Selector(text=table).xpath(
-                protocol_xpath_expression).extract()
+            protocols = Selector(
+                text=table).xpath(protocol_xpath_expression).extract()
             if port_expression:
-               ports = Selector(text=table).xpath(port_expression).extract()
+                ports = Selector(text=table).xpath(port_expression).extract()
         except Exception as e:
-            crawler_logger.error({"url":response.url,"error":e.args})
+            crawler_logger.error({"url": response.url, "error": e.args})
             return items
         try:
             for index, ip in enumerate(ips):
@@ -62,13 +70,25 @@ class BaseSpider(scrapy.Spider):
                 # 是否同时支持http、https
                 protocol = protocols[index]
                 if "https" in protocol or "HTTPS" in protocol:
-                    items.append(GeeproxyItem(
-                           url=self.construct_proxy_url("https", ip, port), ip=ip, protocol="https", port=port))
+                    items.append(
+                        GeeproxyItem(url=self.construct_proxy_url(
+                            "https", ip, port),
+                                     ip=ip,
+                                     protocol="https",
+                                     port=port))
                 if "http" in protocol or "HTTP" in protocol:
-                    items.append(GeeproxyItem(
-                        url=self.construct_proxy_url("http", ip, port), ip=ip, protocol="http", port=port))
+                    items.append(
+                        GeeproxyItem(url=self.construct_proxy_url(
+                            "http", ip, port),
+                                     ip=ip,
+                                     protocol="http",
+                                     port=port))
         except Exception as e:
-            crawler_logger.error({"url": response.url, "error": e.args,"ips":ips})
+            crawler_logger.error({
+                "url": response.url,
+                "error": e.args,
+                "ips": ips
+            })
             return items
         return items
 
