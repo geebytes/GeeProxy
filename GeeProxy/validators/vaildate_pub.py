@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2020-03-03 12:24:30
 @LastEditors: John
-@LastEditTime: 2020-03-03 23:24:45
+@LastEditTime: 2020-03-04 10:55:17
 @Description: 发布消息，待校验代理入队列
 '''
 
@@ -20,7 +20,8 @@ def vaildate_pub():
         proxy_validator.info("proxy key {} ready vildate".format(proxy))
     proxies = pipe.execute()
     for proxy in proxies:
-        pipe.sadd(VALIDATE_QUEUE_KEY, proxy)
-        proxy_validator.info("This proxy '{}' has enter queue".format(proxy))
+        if proxy:
+           pipe.sadd(VALIDATE_QUEUE_KEY, proxy)
+           proxy_validator.info("This proxy '{}' has enter queue".format(proxy))
     pipe.execute()
     client.publish(VALIDATE_CHANNEL, "validator")

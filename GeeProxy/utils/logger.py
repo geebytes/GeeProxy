@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2020-03-01 17:57:02
 @LastEditors: John
-@LastEditTime: 2020-03-03 22:49:30
+@LastEditTime: 2020-03-04 13:43:34
 @Description: This module provides log handle module
 '''
 
@@ -134,6 +134,16 @@ config = {
             "backupCount": 20,
             "encoding": "utf8"
         },
+        "client_logger_handler": {
+            "class": "logging.handlers.RotatingFileHandler",
+            # "class": "GeeProxy.utils.logger.SafeRotatingFileHandler",
+            "level": "DEBUG",
+            "formatter": "scrapy",
+            "filename": LOG_PATH + "/client.log",
+            "maxBytes": 10485760,
+            "backupCount": 20,
+            "encoding": "utf8"
+        },
         "error_file_handler": {
             "class": "logging.handlers.RotatingFileHandler",
             # "class": "GeeProxy.utils.logger.SafeRotatingFileHandler",
@@ -188,6 +198,13 @@ config = {
             ],
             "propagate": "no"
         },
+        "client_logger": {
+            "level": "INFO",
+            "handlers": [
+                "client_logger_handler"
+            ],
+            "propagate": "no"
+        },
     },
     "root": {
         "level": "INFO",
@@ -213,6 +230,8 @@ proxy_validator = logging.getLogger('proxy_validator')
 middlewares_logger = logging.getLogger('middlewares')
 pipeline_logger = logging.getLogger('pipeline_logger')
 scheduler_logger = logging.getLogger('scheduler_logger')
+available_validator = logging.getLogger('available_validator')
+client_logger = logging.getLogger('client_logger')
 
 
         

@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2020-03-02 17:14:07
 @LastEditors: John
-@LastEditTime: 2020-03-03 21:49:47
+@LastEditTime: 2020-03-04 15:06:40
 @Description: 定时校验任务
 '''
 import asyncio
@@ -24,8 +24,9 @@ async def validate_task():
     result = None
     proxy = client.spop(VALIDATE_QUEUE_KEY)
     while proxy:
+        proxy_validator.info(
+            "This proxy {} has joined the validation task.".format(proxy))
         for k, v in VAILDATORS.items():
-            proxy_validator.info("This proxy {} has joined the validation task.".format(proxy))
             vaildator = ProxyValidator()
             tasks.append(vaildator.check_proxy(
                 proxy=proxy, dst=v, cache_key=k))
@@ -36,7 +37,7 @@ async def validate_task():
         for r in result:
             res = r.result()
             proxy_validator.info("The reuslt validate proxy {} of '{}' is {}.".format(
-                res["proxy"], res["cache_key"], "useful" if res["useful"] else "unuseful"))
+                res["proxy"], res["cache_key"], "useful" if res["useful"] else "unavailable"))
             try:
                 if not res["useful"]:
                     # 不可用就删除
@@ -80,5 +81,6 @@ def subscribe_validator():
     while True:
         message = p.get_message()
         if message:
+            proxy_validator.info("Process has got a message '{}' and has started validator task.".format(message))
             validate_runner()
         time.sleep(0.5)

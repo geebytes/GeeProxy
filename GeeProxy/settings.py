@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2020-03-01 02:10:32
 @LastEditors: John
-@LastEditTime: 2020-03-03 23:15:34
+@LastEditTime: 2020-03-04 14:34:33
 @Description: 配置文件
 '''
 # -*- coding: utf-8 -*-
@@ -158,6 +158,7 @@ VAILDATORS = {
     "proxy:www.xicidaili.com": "https://www.xicidaili.com",
     "proxy:www.kuaidaili.com": "https://www.kuaidaili.com",
     "proxy:http": "https://httpbin.org",
+    "proxy:imooc.com": "https://www.imooc.com/"
 }
 # 校验器代理请求超时时间
 VAILDATORS_TIMEOUT = 10
@@ -185,6 +186,13 @@ DUPEFILTER_CLASS = "scrapy_redis_cluster.dupefilter.RFPDupeFilter"
 # queue
 SCHEDULER_QUEUE_CLASS = 'scrapy_redis_cluster.queue.PriorityQueue'
 
+# 目标站点可用代理
+WEB_AVAILABLE_PROXIES = {
+    "imooc": "proxy:imooc.com",
+}
+
+# 代理更新抓取任务时间间隔
+PROXY_UPDATE_TIME = 60 * 60 * 5
 
 try:
     from dev_config import *

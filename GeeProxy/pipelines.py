@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2020-03-01 02:10:32
 @LastEditors: John
-@LastEditTime: 2020-03-03 20:50:36
+@LastEditTime: 2020-03-04 13:12:41
 @Description: 
 '''
 
@@ -43,7 +43,7 @@ class GeeproxyPipeline(object):
             if exist:
                 mapping = dict(item)
                 mapping["update"] = timestamp
-                mapping["useful"] = 1
+                mapping["available"] = 1
                 mapping["delay"] = r["delay"]
                 key = ITEM_HASH_KEY.format(proxy=item["url"], domain=get_domain(r["dst"]))
                 client.hmset(key, mapping)

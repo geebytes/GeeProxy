@@ -151,7 +151,7 @@ class ProxyRetryMiddleware(RetryMiddleware):
             key = "fail_proxy"
             value = "{}:{}".format(proxy, domain)
             count = client.zscore(key, value)
-            if count != PROXY_THRESHOLD:
+            if count != PROXY_THRESHOLD - 1:
                 client.zincrby(key, 1, value)
             else:
                 domain = get_domain(url)

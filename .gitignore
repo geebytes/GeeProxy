@@ -8,3 +8,5 @@ dev_config.py
 *.pyc
 logs
 *.cover_zset_to_set.py
+test.py
+*.pyc
