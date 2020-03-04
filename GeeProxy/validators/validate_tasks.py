@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2020-03-02 17:14:07
 @LastEditors: John
-@LastEditTime: 2020-03-04 20:42:55
+@LastEditTime: 2020-03-05 01:03:42
 @Description: 定时校验任务
 '''
 import asyncio
@@ -58,8 +58,7 @@ async def validate_task():
             except Exception as e:
                 proxy_validator.error(
                     "An exception {} occurred while checking \
-                        proxy {} availability."
-                    .format(e, res["proxy"]))
+                        proxy {} availability.".format(e, res["proxy"]))
         # 提交更新操作
         pipelines.execute()
     return result
@@ -81,12 +80,19 @@ def subscribe_validator():
     """
     p = client.pubsub()
     p.subscribe(VALIDATE_CHANNEL)
-    while True:
-        message = p.get_message()
-        if message:
+    for msg in p.listen():
+        if msg['type'] == 'message':
             proxy_validator.info(
                 "Process has got a message '{}' and has started \
-                validator task."
-                .format(message))
+                 validator task.".format(msg["data"]))
             validate_runner()
-        time.sleep(0.5)
+
+    # while True:
+    #     message = p.get_message()
+    #     if message:
+    #         proxy_validator.info(
+    #             "Process has got a message '{}' and has started \
+    #             validator task."
+    #             .format(message))
+    #         validate_runner()
+    #     time.sleep(0.5)
