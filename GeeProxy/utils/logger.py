@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2020-03-01 17:57:02
 @LastEditors: John
-@LastEditTime: 2020-03-04 13:43:34
+@LastEditTime: 2020-03-10 02:12:14
 @Description: This module provides log handle module
 '''
 
@@ -58,13 +58,15 @@ class SafeRotatingFileHandler(RotatingFileHandler):
                 return True
 
         return False
-    
+
+
 config = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
         "scrapy": {
-            "format": "%(filename)s-%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            "format":
+            "%(filename)s-%(asctime)s - %(name)s - %(levelname)s - %(module)s -%(funcName)s- %(lineno)d-%(message)s"
         }
     },
     "handlers": {
@@ -153,68 +155,81 @@ config = {
             "maxBytes": 10485760,
             "backupCount": 20,
             "encoding": "utf8"
+        },
+        "api_handler": {
+            "class": "logging.handlers.RotatingFileHandler",
+            # "class": "GeeProxy.utils.logger.SafeRotatingFileHandler",
+            "level": "ERROR",
+            "formatter": "scrapy",
+            "filename": LOG_PATH + "/api.log",
+            "maxBytes": 10485760,
+            "backupCount": 20,
+            "encoding": "utf8"
+        },
+        "item_handler": {
+            "class": "logging.handlers.RotatingFileHandler",
+            # "class": "GeeProxy.utils.logger.SafeRotatingFileHandler",
+            "level": "ERROR",
+            "formatter": "scrapy",
+            "filename": LOG_PATH + "/item_vaildator.log",
+            "maxBytes": 10485760,
+            "backupCount": 20,
+            "encoding": "utf8"
         }
     },
     "loggers": {
         "spider": {
             "level": "ERROR",
-            "handlers": [
-                "console"
-            ],
+            "handlers": ["console"],
             "propagate": "no"
         },
         "cralwer": {
             "level": "INFO",
-            "handlers": [
-                "cralwer_handler"
-            ],
+            "handlers": ["cralwer_handler"],
             "propagate": "no"
         },
         "proxy_validator": {
             "level": "INFO",
-            "handlers": [
-                "proxy_validator_handler"
-            ],
+            "handlers": ["proxy_validator_handler"],
             "propagate": "no"
         },
         "middlewares": {
             "level": "INFO",
-            "handlers": [
-                "middlewares_handler"
-            ],
+            "handlers": ["middlewares_handler"],
             "propagate": "no"
         },
         "pipeline_logger": {
             "level": "INFO",
-            "handlers": [
-                "pipeline_logger_handler"
-            ],
+            "handlers": ["pipeline_logger_handler"],
             "propagate": "no"
         },
         "scheduler_logger": {
             "level": "INFO",
-            "handlers": [
-                "scheduler_logger_handler"
-            ],
+            "handlers": ["scheduler_logger_handler"],
             "propagate": "no"
         },
         "client_logger": {
             "level": "INFO",
-            "handlers": [
-                "client_logger_handler"
-            ],
+            "handlers": ["client_logger_handler"],
+            "propagate": "no"
+        },
+        "api_logger": {
+            "level": "INFO",
+            "handlers": ["api_handler"],
+            "propagate": "no"
+        },
+        "item_logger": {
+            "level": "INFO",
+            "handlers": ["item_handler"],
             "propagate": "no"
         },
     },
     "root": {
         "level": "INFO",
-        "handlers": [
-            "console",
-            "info_file_handler",
-            "error_file_handler"
-        ]
+        "handlers": ["console", "info_file_handler", "error_file_handler"]
     }
 }
+
 
 def setup_logging():
     """Setup logging configuration from json 
@@ -232,7 +247,5 @@ pipeline_logger = logging.getLogger('pipeline_logger')
 scheduler_logger = logging.getLogger('scheduler_logger')
 available_validator = logging.getLogger('available_validator')
 client_logger = logging.getLogger('client_logger')
-
-
-        
-
+api_logger = logging.getLogger('api_logger')
+item_logger = logging.getLogger('item_logger')

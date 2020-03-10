@@ -2,65 +2,56 @@
 @Author: John
 @Date: 2020-03-02 17:14:07
 @LastEditors: John
-@LastEditTime: 2020-03-05 01:09:20
+@LastEditTime: 2020-03-10 00:14:06
 @Description: 定时校验任务
 '''
 import asyncio
 import time
-from GeeProxy.settings import VAILDATORS, VALIDATE_CHANNEL,\
-     VALIDATE_QUEUE_KEY, ITEM_HASH_KEY
+from GeeProxy.settings import VALIDATE_CHANNEL,\
+     VALIDATE_QUEUE_KEY,PUBLISH_LOCK, PROXY_VALIDATE_TIME
+
 from GeeProxy.utils.redis_cli import client
-from GeeProxy.validators.validators import ProxyValidator
 from GeeProxy.utils.logger import proxy_validator
-from GeeProxy.utils.tools import get_domain
+from GeeProxy.client.client import AvailableProxy
+from GeeProxy.utils.tools import get_vaildator_task
 
 
 async def validate_task():
     """
-    异步代理校验任务
+    定时代理校验任务
     """
     tasks = []
     result = None
-    proxy = client.spop(VALIDATE_QUEUE_KEY)
+    proxy = client.rpop(VALIDATE_QUEUE_KEY)
     while proxy:
         proxy_validator.info(
             "This proxy {} has joined the validation task.".format(proxy))
-        for k, v in VAILDATORS.items():
-            vaildator = ProxyValidator()
-            tasks.append(vaildator.check_proxy(proxy=proxy, dst=v,
-                                               cache_key=k))
-        proxy = client.spop(VALIDATE_QUEUE_KEY)
+        tasks.extend(get_vaildator_task(proxy))
+        proxy = client.rpop(VALIDATE_QUEUE_KEY)
+        time.sleep(0.5)
     if tasks:
-        result, _ = await asyncio.wait(tasks)
-        pipelines = client.pipeline()
+        result = await asyncio.gather(*tasks)
         for r in result:
-            res = r.result()
+            res = r
+            s = "available" if res.available else "unavailable"
             proxy_validator.info(
-                "The reuslt validate proxy {} of '{}' is {}.".format(
-                    res["proxy"], res["cache_key"],
-                    "useful" if res["useful"] else "unavailable"))
+                "{} validation for {} tasks result is {} .".format(
+                    res.proxy, res.web_key, s))
             try:
-                if not res["useful"]:
+                if not res.available:
                     # 不可用就删除
-                    pipelines.srem(res["cache_key"], res["proxy"])
-                    pipelines.delete(
-                        ITEM_HASH_KEY.format(proxy=res["proxy"],
-                                             domain=get_domain(res["dst"])))
-                    proxy_validator.info("delete proxy {}".format(
-                        res["proxy"]))
+                    await AvailableProxy.delete_proxy(res.proxy, res.web_key)
+                    proxy_validator.info("delete proxy {} with {}".format(
+                        res.proxy, res.web_key))
                 else:
-                    proxy_validator.info("update proxy {}".format(
-                        res["proxy"]))
-                    key = ITEM_HASH_KEY.format(proxy=res["proxy"],
-                                               domain=get_domain(res["dst"]))
-                    pipelines.hset(key, "delay", res["delay"])
-                    pipelines.sadd(res["cache_key"], res["proxy"])
+                    proxy_validator.info("update proxy {}".format(res.proxy))
+                    await AvailableProxy.update_proxy_delay(res.proxy, res.dst,
+                                                      res.delay)
             except Exception as e:
                 proxy_validator.error(
-                    "An exception {} occurred while checking \
-                        proxy {} availability.".format(e, res["proxy"]))
-        # 提交更新操作
-        pipelines.execute()
+                    "An exception {} occurred while checking proxy {} availability.".format(e, res.proxy))
+            finally:
+                client.delete(PUBLISH_LOCK)
     return result
 
 
@@ -68,7 +59,10 @@ def validate_runner():
     """
     启动校验任务
     """
-    loop = asyncio.new_event_loop()
+    loop = asyncio.get_event_loop()
+    new_loop = None
+    if loop.is_closed():
+       loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     loop.run_until_complete(validate_task())
     loop.close()
@@ -76,24 +70,12 @@ def validate_runner():
 
 def subscribe_validator():
     """
-    订阅待校验队列
+    待校验队列
     """
-    p = client.pubsub()
-    p.subscribe(VALIDATE_CHANNEL)
     while True:
-        for msg in p.listen():
-            if msg['type'] == 'message':
-                proxy_validator.info(
-                    "Process has got a message '{}' and has started \
-                     validator task.".format(msg["data"]))
+        time.sleep(3)
+        if client.llen(VALIDATE_QUEUE_KEY):
+            try:
                 validate_runner()
-
-    # while True:
-    #     message = p.get_message()
-    #     if message:
-    #         proxy_validator.info(
-    #             "Process has got a message '{}' and has started \
-    #             validator task."
-    #             .format(message))
-    #         validate_runner()
-    #     time.sleep(0.5)
+            except Exception:
+                pass

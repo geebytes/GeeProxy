@@ -2,12 +2,13 @@
 @Author: John
 @Date: 2020-03-01 02:10:32
 @LastEditors: John
-@LastEditTime: 2020-03-04 20:38:54
+@LastEditTime: 2020-03-10 10:26:02
 @Description: 配置文件
 '''
 # -*- coding: utf-8 -*-
 
 import os
+import requests
 # Scrapy settings for GeeProxy project
 #
 # For simplicity, this file contains only settings considered important or
@@ -29,7 +30,7 @@ NEWSPIDER_MODULE = 'GeeProxy.spiders'
 ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-# CONCURRENT_REQUESTS = 32
+CONCURRENT_REQUESTS = 16
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://doc.scrapy.org/en/latest/topics/settings.html#download-delay
@@ -77,7 +78,9 @@ EXTENSIONS = {
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'GeeProxy.pipelines.GeeproxyPipeline': 300,
+    'GeeProxy.pipelines.GeeproxyPipeline': None,
+    'GeeProxy.pipelines.ProxyAnonymousPipeline': None,
+    'GeeProxy.pipelines.GeeProxyNoVaildatePipe': 300
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -132,6 +135,9 @@ REDIS_NODES = [
         'port': 7005
     },
 ]
+
+REDIS_START_URLS_BATCH_SIZE = 16
+
 REDIS_MASTER_NODES = REDIS_NODES
 # redis密码
 REDIS_PASSWORD = ""
@@ -144,9 +150,11 @@ if not os.path.exists(LOG_PATH):
     os.mkdir(LOG_PATH)
 
 HTTPERROR_ALLOWED_CODES = [403, 503]
-RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 408, 429, 403]
+
+RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 408, 429, 403, 302]
 # ITEM 对象存储键
-ITEM_HASH_KEY = "geeproxy:{proxy}:{domain}"
+ITEM_HASH_KEY = "geeproxy:{proxy}"
+
 PROXY_KEY_PATTERN = "geeproxy:*"
 # 待校验消息队列
 VALIDATE_QUEUE_KEY = "vaildate:proxy"
@@ -154,24 +162,29 @@ VALIDATE_QUEUE_KEY = "vaildate:proxy"
 VALIDATE_CHANNEL = "vaildators"
 # 校验消息的内容
 VALIDATE_MSG = "vaildators start"
+
+# 消息发布锁
+PUBLISH_LOCK = "public_lock"
 # 校验器，校验目标及结果存储键值
 VAILDATORS = {
-    "proxy:www.xiladaili.com": "http://www.xiladaili.com",
-    "proxy:www.xicidaili.com": "https://www.xicidaili.com",
-    "proxy:www.kuaidaili.com": "https://www.kuaidaili.com",
-    "proxy:http": "https://httpbin.org",
-    "proxy:imooc.com": "https://www.imooc.com/"
+    "proxy:xiladaili": "http://www.xiladaili.com",
+    "proxy:xicidaili": "https://www.xicidaili.com",
+    "proxy:kuaidaili": "https://www.kuaidaili.com",
+    "proxy:https": "https://httpbin.org",
+    "proxy:http": "http://httpbin.org",
+    "proxy:imooc": "https://www.imooc.com/",
+    "proxy:ip3366": "http://www.ip3366.net"
 }
 # 校验器代理请求超时时间
-VAILDATORS_TIMEOUT = 10
+VAILDATORS_TIMEOUT = 5
 # 校验器的代理尝试重连次数
-VAILDATORS_RETRY = 3
+VAILDATORS_RETRY = 2
 # 代理请求失败的最大次数
-PROXY_THRESHOLD = 5
+PROXY_THRESHOLD = 2
 # 定时校验任务时间间隔
-PROXY_VALIDATE_TIME = 10 * 60
+PROXY_VALIDATE_TIME = 20 * 60
 # 允许校验代理请求的最大延迟时间 s
-PROXY_REQUEST_DELAY = 10
+PROXY_REQUEST_DELAY = 5
 
 # 使用的哈希函数数，默认为6
 BLOOMFILTER_HASH_NUMBER = 6
@@ -190,11 +203,58 @@ SCHEDULER_QUEUE_CLASS = 'scrapy_redis_cluster.queue.PriorityQueue'
 
 # 目标站点可用代理
 WEB_AVAILABLE_PROXIES = {
-    "imooc": "proxy:imooc.com",
+    "imooc": "proxy:imooc",
+    "http": "proxy:http",
+    "https": "proxy:https",
+    "xiladaili": "proxy:xiladaili",
+    "xicidaili": "proxy:xicidaili",
+    "kuaidaili": "proxy:kuaidaili",
+    "ip3366": "proxy:ip3366",
 }
 
+PUBLIC_IP = "116.9.190.2"
+if not PUBLIC_IP:
+    try:
+        PUBLIC_IP = requests.get("https://httpbin.org/ip",timeout=10).json()["origin"]
+        print("公网ip为{}".format(PUBLIC_IP))
+    except Exception:
+        print("获取本机公网ip失败")
+        os._exit(0)
 # 代理更新抓取任务时间间隔
-PROXY_UPDATE_TIME = 60 * 60 * 3
+PROXY_UPDATE_TIME = 60 * 60 * 30
+
+# 代理可匿程度检测接口
+ANONYMOUS_CHECK_API = "https://httpbin.org/get"
+
+# 全局设置是否允许使用透明代理
+ALLOWED_TRANSPARENT_PROXY = False
+
+# API　服务端口
+API_SERVER_PORT = 5000
+
+# API 地址
+API_SERVER = "http://127.0.0.1:5000"
+
+# 针对特定网站设置是否允许透明代理
+WEB_TRANSPARENT_PROXY = {
+    "xiladaili": False,
+    "xicidaili": False,
+    "kuaidaili": False,
+    "https": False,
+    "http": False,
+    "imooc": False,
+    "ip3366": False
+}
+
+DEFAULT_PROXY = "https"
+
+PROXY_LOCK = "lock:proxy:{}"
+
+ASYNCIO_ENABLED = True
+
+ITEM_VAILDATE_SET = "vaildate:proxy:set"
+
+# TWISTED_REACTOR="twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 
 try:
     from dev_config import *

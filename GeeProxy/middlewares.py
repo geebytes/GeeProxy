@@ -8,12 +8,10 @@ from scrapy import signals
 from scrapy.downloadermiddlewares.retry import RetryMiddleware
 from scrapy.downloadermiddlewares.useragent import UserAgentMiddleware
 from scrapy.utils.response import response_status_message
-from .client.client import AvailableProxy
-from .utils.user_agent import UserAgent
-from .utils.redis_cli import client
-from .utils.logger import middlewares_logger
-from .utils.tools import get_domain
-from GeeProxy.settings import ITEM_HASH_KEY
+from GeeProxy.utils.user_agent import UserAgent
+from GeeProxy.utils.logger import middlewares_logger
+from GeeProxy.utils.tools import get_web_index,  get_proxy, update_proxy, del_proxy
+from GeeProxy.settings import PROXY_REQUEST_DELAY, DEFAULT_PROXY
 
 
 class GeeproxySpiderMiddleware(object):
@@ -32,17 +30,20 @@ class GeeproxySpiderMiddleware(object):
         # Called for each response that goes through the spider
         # middleware and into the spider.
         url = response.url
-        if 'proxy' in response.meta:
+        if 'proxy' in response.meta and response.meta['proxy']:
             proxy = response.meta['proxy']
             delay = response.meta['download_latency']
-            domain = get_domain(url)
-            key = ITEM_HASH_KEY.format(proxy=proxy, domain=domain)
-            middlewares_logger.info(
-                "update proxy {} delay of '{}' with value '{}'".format(
-                    proxy, key, delay))
-            # 更新延迟
-            client.hset(key, "delay", delay)
-            # Should return None or raise an exception.
+            web = get_web_index(url)
+            if PROXY_REQUEST_DELAY > delay:
+                # coro = AvailableProxy.update_proxy_delay(proxy, web, delay)
+                # run_sync(coro)
+                update_proxy(proxy,web,delay)
+            else:
+                del_proxy(proxy,DEFAULT_PROXY)
+                # proxy_client = AvailableProxy()
+#
+# coro = proxy_client.delete_proxy(proxy, DEFAULT_PROXY)
+# run_sync(coro)
         return None
 
     def process_spider_output(self, response, result, spider):
@@ -127,32 +128,32 @@ class ProxyMiddleware(object):
     提供IP代理中间件
     """
     def process_request(self, request, spider):
-        # domain = get_domain(request.url)
-        # key = "proxy:{}".format(domain)
-        key = "proxy:http"
-        number = client.scard(key)
-        middlewares_logger.info('There are {} proxies in "{}"'.format(
-            number, key))
-        proxy = client.srandmember(key)
+        # available_proxy = AvailableProxy()
+        key = DEFAULT_PROXY
+        proxy = get_proxy(key)
+        # print("url is %s" % request.url)
         if proxy:
-            middlewares_logger.info("add proxy %s" % proxy)
-            request.meta['proxy'] = proxy
-            # request.meta['protocol'] = protocol
+            middlewares_logger.info("Request {} add proxy {}".format(
+                request.url, proxy[0]))
+            request.meta['proxy'] = proxy[0]
         return None
 
 
 class ProxyRetryMiddleware(RetryMiddleware):
     def delete_proxy(self, url, proxy):
         if proxy:
-            domain = get_domain(url)
-            proxy_client = AvailableProxy()
-            proxy_client.delete_proxy(proxy, domain)
+            # proxy_client = AvailableProxy()
+            #coro = proxy_client.delete_proxy(proxy, DEFAULT_PROXY)
+            del_proxy(proxy, DEFAULT_PROXY)
+            # run_sync(coro)
 
     def process_response(self, request, response, spider):
         if response.status in self.retry_http_codes:
             reason = response_status_message(response.status)
             # 删除该代理
-            self.delete_proxy(request.url, request.meta.get('proxy', False))
+            self.delete_proxy(request.url,request.meta.get('proxy', False))
+            # run_sync(coro)
+
             return self._retry(request, reason, spider) or response
         return response
 
@@ -160,7 +161,8 @@ class ProxyRetryMiddleware(RetryMiddleware):
         if isinstance(exception, self.EXCEPTIONS_TO_RETRY) \
                 and not request.meta.get('dont_retry', False):
             # 删除该代理
-            self.delete_proxy(request.url, request.meta.get('proxy', False))
+            self.delete_proxy(request.url,request.meta.get('proxy', False))
+            # run_sync(coro)
             middlewares_logger.info('连接异常, 进行重试...')
             request.headers['User-Agent'] = UserAgent.random()
             return self._retry(request, exception, spider)

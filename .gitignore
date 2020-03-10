@@ -13,3 +13,5 @@ test.py
 *.pyc
 __pycache__/
 .vscode
+tmp_scrpt.py
+test.py
