@@ -9,12 +9,12 @@ TODO
 ## 示例:  
 TODO
 
-## 特性（可选）
+## 特性
 - 特性A
 
 - 特性B
 
-## 原理说明（可选）
+## 原理说明
 TODO
 
 
@@ -27,7 +27,7 @@ TODO
 ## 注意事项
 TODO
 
-## TODO（可选）
+## TODO
 TODO
 
 ## License
