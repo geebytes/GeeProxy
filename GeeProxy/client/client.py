@@ -30,19 +30,23 @@ class AvailableProxy:
 
     def _get_available_proxy(self) -> str:
         """
-            随机拿到一个代理
+        随机拿到一个代理
         """
         return client.srandmember(self.web)
 
     def _get_available_proxies(self) -> list:
         """
-          拿到所有的代理
+        拿到代理池中的所有的代理
         """
         return client.smembers(self.web)
 
     def available_proxy(self, web_key: str, all=False) -> list:
         """
-            获取可用代理
+        获取可用代理
+
+        :param web_key: 目标站点的key
+        :param all: 是否拿到代理池中的所有代理
+        :return: 返回可用的代理列表
         """
         if not WEB_AVAILABLE_PROXIES.get(web_key):
             raise NotDefinedWebKey(
@@ -58,11 +62,14 @@ class AvailableProxy:
     @staticmethod
     async def delete_proxy(proxy: str, web_key: str):
         """
-            删除代理,主要逻辑是先取到这个代理请求目标网站失败的次数，
-            若等于预先设定阈值，则直接删除，否则计数器加１;
-            如果进入删除流程，先判断是否有网站还在使用该代理,
-            即hash表中引用计数器等于0时就直接删除该代理，否则引用计数器减1,
-            随后删除目标网站代理集合中的代理和请求失败集合中的代理。
+        删除代理,主要逻辑是先取到这个代理请求目标网站失败的次数，
+        若等于预先设定阈值，则直接删除，否则计数器加１;
+        如果进入删除流程，先判断是否有网站还在使用该代理,
+        即hash表中引用计数器等于0时就直接删除该代理，否则引用计数器减1,
+        随后删除目标网站代理集合中的代理和请求失败集合中的代理。
+
+        :param proxy: 代理
+        :param web_key: 站点的key
         """
         if proxy:
             # 请求失败记录的存储key
@@ -118,9 +125,13 @@ class AvailableProxy:
     @staticmethod
     async def add_proxy(data: ValidateResult, item: GeeproxyItem) -> bool:
         """
-            添加代理，主要逻辑是，判断hash表中是否已经存在该代理，
-            若不存在就将对应数据存入,否则就在该代理的hash对象中加上
-            以目标网站地址的字段并以延迟为值,引用计数器加1。
+        添加代理，主要逻辑是，判断hash表中是否已经存在该代理，
+        若不存在就将对应数据存入,否则就在该代理的hash对象中加上
+        以目标网站地址的字段并以延迟为值,引用计数器加1。
+
+        :param data: 校验结果
+        :param item: 数据项
+        :return: 若成功添加数据则返回True,否则返回False
         """
         mapping = data.__dict__
         try:
@@ -171,7 +182,12 @@ class AvailableProxy:
     @staticmethod
     async def update_proxy_delay(proxy: str, dst: str, delay: float) -> bool:
         """
-            更新代理对目标站点的延迟
+        更新代理对目标站点的延迟
+
+        :param proxy: 待更新的代理
+        :param dst: 目标站点url
+        :param delay: 延迟
+        :return: 若成功更新数据则返回True,否则返回False
         """
         # 先拿到分布式锁
         key = ITEM_HASH_KEY.format(proxy=proxy)
