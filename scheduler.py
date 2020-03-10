@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2020-03-02 18:17:27
 @LastEditors: John
-@LastEditTime: 2020-03-10 13:42:56
+@LastEditTime: 2020-03-10 18:35:06
 @Description: 调度器
 '''
 
@@ -103,18 +103,22 @@ def run_cronjob(master, crawl, vaildator):
 @click.option(
     "--vaildator/--no-vaildator",
     default=True,
-    help=
-    "Do you run a proxy vailator?\nIf it is used as a message queue publisher, be sure to add the '--master' parameter.",
+    help="Do you run a proxy vailator?\nIf it is used as a message queue publisher, be sure to add the '--master' parameter.",
 )
 @click.option(
     "--app/--no-app",
-    default=False,
+    default=True,
     help="Start API Server",
 )
 def scheduleder(master, crawl, vaildator, app):
     '''
        主调度器
     '''
+    master = os.environ.get("MASTER", "") if os.environ.get("MASTER", "") else master
+    crawl = os.environ.get("CRAWL", "") if os.environ.get("CRAWL", "") else crawl
+    vaildator = os.environ.get("VAILDATOR", "") if os.environ.get("MASTER", "") else vaildator
+    app = os.environ.get("APP", "") if os.environ.get("MASTER", "") else app
+    
     scheduler_logger.info(
         "Master value is {},crawl value is {},vaildator value is {}".format(
             master, crawl, vaildator))
