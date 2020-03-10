@@ -1,21 +1,25 @@
-'''
+"""
 @Author: John
 @Date: 2020-03-03 12:24:30
 @LastEditors: John
 @LastEditTime: 2020-03-10 13:41:18
 @Description: 发布消息，待校验代理入队列
-'''
+"""
 
 from GeeProxy.utils.redis_cli import client
 from GeeProxy.utils.logger import proxy_validator
 from GeeProxy.settings import VALIDATE_QUEUE_KEY, \
-    VALIDATE_CHANNEL, PROXY_KEY_PATTERN, PUBLISH_LOCK, PROXY_VALIDATE_TIME, WEB_AVAILABLE_PROXIES
+    VALIDATE_CHANNEL, PUBLISH_LOCK, PROXY_VALIDATE_TIME, WEB_AVAILABLE_PROXIES
 
 
 def vaildate_pub():
-    if client.setnx(
-            PUBLISH_LOCK,
-            "vaildate_publish") == 0 or client.llen(VALIDATE_QUEUE_KEY):
+    """
+    将待校验的代理送入队列
+
+    :return:
+    """
+    if client.setnx(PUBLISH_LOCK, "vaildate_publish") == 0 or client.llen(VALIDATE_QUEUE_KEY):
+        # 如果已有代理正在入队列，或者队列中存在经过两次校验周期仍存在的代理
         proxy_validator.info("proxy key already vildate.")
     else:
         try:
@@ -27,9 +31,8 @@ def vaildate_pub():
             for proxy in proxy_keys:
                 if proxy is not None:
                     pipe.lpush(VALIDATE_QUEUE_KEY, proxy)
-                    proxy_validator.info(
-                        "This proxy '{}' has enter queue".format(proxy))
+                    proxy_validator.info("This proxy '{}' has enter queue".format(proxy))
             pipe.execute()
             client.publish(VALIDATE_CHANNEL, "validator")
         except Exception:
-            pass
+            client.delete(PUBLISH_LOCK)

@@ -1,10 +1,10 @@
-'''
+"""
 @Author: John
 @Date: 2020-03-01 17:57:02
 @LastEditors: John
 @LastEditTime: 2020-03-10 02:12:14
 @Description: This module provides log handle module
-'''
+"""
 
 import os
 import json

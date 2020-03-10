@@ -44,13 +44,17 @@ class AiohttpSingleton(ClientSession):
 
 
 class ValidateResult:
-    def __init__(self,
-                 proxy=None,
-                 web_key=None,
-                 delay=-1,
-                 dst=None,
-                 anonymous=True,
-                 useful=True):
+    """
+    校验结果
+    """
+    def __init__(self, proxy=None, web_key=None, delay=-1, dst=None, useful=1):
+        """
+        :param proxy: 代理地址
+        :param web_key: 缓存key
+        :param delay: 延迟
+        :param dst: 目标站点
+        :param useful: 是否可用
+        """
         # 代理地址
         self.proxy = proxy
         # 缓存key
@@ -66,24 +70,27 @@ class ValidateResult:
 
 
 class ProxyValidator:
-    '''
+    """
       异步代理校验器,校验过程如下，通过代理请求目标站点，若超时,
       则重试，当重试次数大于给定的阈值时，请求仍失败就认为这个代理不可用,
-      期间会计算请求过程的延迟
-    '''
+      期间会计算请求过程的延迟。
+    """
     def __init__(self):
         self._retry = 0
         self._timeout = ClientTimeout(total=VAILDATORS_TIMEOUT)
         self._ua = UserAgent()
         self._result = {}
 
-    async def check_proxy(self, proxy: str, dst: str,
-                          web_key: str) -> ValidateResult:
-        result = ValidateResult(proxy=proxy,
-                                delay=-1,
-                                web_key=web_key,
-                                dst=dst,
-                                useful=1)
+    async def check_proxy(self, proxy: str, dst: str, web_key: str) -> ValidateResult:
+        """
+        校验代理的可用性
+
+        :param proxy: 待校验的代理
+        :param dst: 目标站点地址
+        :param web_key: 目标站点
+        :return: 校验结果
+        """
+        result = ValidateResult(proxy=proxy, delay=-1, web_key=web_key, dst=dst, useful=1)
         time_start = time.time()
         try:
             # 启用代理
@@ -116,7 +123,7 @@ class ProxyValidator:
                     proxy, dst, delay))
             result.delay = delay
             result.available = 1
-            # 最大的请求延迟
+            # 请求超时就认为代理不可用
             if delay > PROXY_REQUEST_DELAY:
                 result.available = 0
             return result
@@ -131,16 +138,15 @@ class ProxyValidator:
                 result.available = 0
             # 重试
             if self._retry <= VAILDATORS_RETRY:
+                # 重试次数小于阈值就再试一次
                 self._retry = self._retry + 1
                 result = await self.check_proxy(proxy, dst, web_key)
                 return result
             time_end = time.time()
-            proxy_validator.error(
-                "check proxy {} {} times fail for {} and cost {} s".format(
-                    proxy, self._retry, dst, time_end - time_start))
-            proxy_validator.error(
-                "check proxy {} for {} error:{} type {}".format(
-                    proxy, dst, err_msg, type(e)))
+            proxy_validator.error("check proxy {} {} times fail for {} "
+                                  "and cost {} s".format(proxy, self._retry, dst, time_end - time_start))
+            proxy_validator.error("check proxy {} for {} "
+                                  "error:{} type {}".format(proxy, dst, err_msg, type(e)))
             self._retry = 0
             result.delay = time_end - time_start
             return result
@@ -148,7 +154,10 @@ class ProxyValidator:
     @staticmethod
     async def check_anonymous(proxy: str) -> bool:
         """
-            检测代理的匿名程度
+        检测代理的匿名程度
+
+        :param proxy: 待校验的代理
+        :return: 校验结果,如果是高匿代理就返回True
         """
         anonymous = True
         try:
@@ -165,18 +174,21 @@ class ProxyValidator:
                     res = json.loads(res)
                     anonymous = ProxyValidator.is_anonymous(res)
                     if anonymous:
-                        proxy_validator.info(
-                            "The proxy {} is anonymous".format(proxy))
+                        proxy_validator.info("The proxy {} is anonymous".format(proxy))
                 await session.close()
                 return anonymous
         except Exception as e:
-            proxy_validator.error("Checking proxy {} anonymous has an error:{} type {}".format(proxy, str(e), type(e)))
+            proxy_validator.error("Checking proxy {} anonymous "
+                                  "has an error:{} type {}".format(proxy, str(e), type(e)))
             raise ClientError("check anonymous")
 
     @staticmethod
     def is_anonymous(response: dict) -> bool:
         """
-            通过接口判断当前代理的可匿程度
+        通过接口判断当前代理的可匿程度
+
+        :param response: 请检测api的响应
+        :return: 校验结果,如果是高匿代理就返回True
         """
         origin = response["origin"]
         proxy_connection = response.get("Proxy-Connection", "")

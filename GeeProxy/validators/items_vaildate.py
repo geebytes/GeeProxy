@@ -1,10 +1,10 @@
-'''
+"""
 @Author: John
 @Date: 2020-03-09 16:48:20
 @LastEditors: John
 @LastEditTime: 2020-03-10 03:45:46
-@Description: 
-'''
+@Description: 校验爬取到的代理数据项的可用性和匿名程度
+"""
 
 import time
 import asyncio
@@ -18,47 +18,80 @@ from GeeProxy.settings import ITEM_VAILDATE_SET
 
 
 class ItemAvalibleVaildate:
+    """
+
+    批量校验数据项，先校验匿名程度，如果该过程发生请求超时等异常就标记为不可用，
+    并跳过对特定站点校验的流程程，否则进入特定站点的校验流程
+
+    """
     def __init__(self, items: list):
         self._items = items
 
     def append(self, item: dict):
+        """
+        添加数据项
+
+        :param item: 数据项
+        :return:
+        """
         self._items.append(item)
 
     async def start_check(self):
+        """
+        开始校验
+        :return:
+        """
         if not self._items:
             return
         try:
-            tasks = [
-                asyncio.ensure_future(self._process_item(item))
-                for item in self._items
-            ]
+            # 构建任务列表
+            tasks = [asyncio.ensure_future(self._process_item(item))for item in self._items]
+            # 异步处理
             await asyncio.gather(*tasks)
         except Exception as e:
-            item_logger.error(
-                "While start check proxy anonymous occurred an {} exception {}.".
-                format(type(e), str(e)))
+            item_logger.error("While start check proxy anonymous"
+                              " occurred an {} exception {}.".format(type(e), str(e)))
 
     async def _process_item(self, item: dict):
+        """
+        处理数据项
+        :param item: 单个数据项
+        :return:
+        """
         if not item:
             return item
+        # 先校验匿名程度
         result = await self._check_anonymous(item)
+        # 是否可用
         if result.get("available", ""):
+            # 检测代理对所有特定站点的可用性
             check_result = await self._check_item(item["url"])
             for r in check_result:
+                # 如果代理可用就入库
                 if r.available:
                     item_logger.info("Add proxy {} to cache.".format(
                         item["url"]))
-                    await AvailableProxy.add_proxy(r, item)
+                    r = await AvailableProxy.add_proxy(r, item)
+                    if r:
+                        # 入库成功就删除临时记录
+                        client.delete(item["url"])
+
         return item
 
-    async def _check_anonymous(self, item):
+    async def _check_anonymous(self, item: dict)-> dict:
+        """
+        检测代理的匿名程度,在请求检测接口的过程中如果超时或发生其他异常就认为代理不可用
+
+        :param item: 待检测的数据项
+        :return: 返回检测后的数据项
+        """
         if not item:
             return item
         item["available"] = 0
         try:
+            # 先判断一下库中有没有这条代理如果有就跳过
             if not AvailableProxy.proxy_exist(item["url"]):
-                item_logger.info("Checking proxy {} anonymous.".format(
-                    item["url"]))
+                item_logger.info("Checking proxy {} anonymous.".format(item["url"]))
                 try:
                     result = await ProxyValidator.check_anonymous(item["url"])
                     item["anonymous"] = int(result)
@@ -67,7 +100,9 @@ class ItemAvalibleVaildate:
                     item_logger.error(
                         "While check proxy {} anonymous occurred an {} exception {}."
                         .format(item["url"], type(e), str(e)))
+                    # 发生异常就直接删除临时记录
                     client.delete(item["url"])
+                    # 代理标记为不可用
                     item["available"] = 0
         except Exception as e:
             item_logger.error(
@@ -76,8 +111,16 @@ class ItemAvalibleVaildate:
         return item
 
     async def _check_item(self, proxy: str) -> list:
+        """
+        校验代理对可用性
+
+        :param proxy: 待校验的代理
+        :return: 结果列表
+        """
         result = []
+        # 拿到代理校验任务列表
         tasks = get_vaildator_task(proxy)
+        # 批量处理
         done = await asyncio.gather(*tasks)
         for d in done:
             check_result = d
@@ -87,6 +130,12 @@ class ItemAvalibleVaildate:
 
 
 def start_loop(loop):
+    """
+    设置当前线程的循环事件
+
+    :param loop: 循环事件
+    :return:
+    """
     asyncio.set_event_loop(loop)
     loop.run_forever()
 

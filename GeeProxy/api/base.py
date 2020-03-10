@@ -1,10 +1,10 @@
-'''
+"""
 @Author: John
 @Date: 2020-03-09 00:27:46
 @LastEditors: John
 @LastEditTime: 2020-03-09 19:14:06
-@Description: 
-'''
+@Description:
+"""
 from tornado import web
 import json
 

@@ -31,9 +31,10 @@ class GeeClusterPipeline(ClusterPipeline):
 
 
 class RedisSingleton(RedisCluster, Redis):
-    '''
-        This is a redis singleton connect client class
-    '''
+    """
+    redis 单例模式下的客户端
+    """
+
     def __init__(self, *args, **keywords):
         if isinstance(self._instance, Redis):
             super(RedisSingleton, self).__init__(*args, **keywords)
@@ -60,40 +61,18 @@ class RedisSingleton(RedisCluster, Redis):
                 cls._pid = pid
         return cls._instance
 
-    # def watch(self, *name):
-    #     self.execute_command("WATCH", *name)
-#
-# def unwatch(self):
-#     self.execute_command("UNWATCH")
-#
-# def multi(self):
-#     self.execute_command("MULTI")
 
-# def pipeline(self, transaction=None, shard_hint=None):
-#     """
-#     Cluster impl:
-#         Pipelines do not work in cluster mode the same way they do in normal mode.
-#         Create a clone of this object so that simulating pipelines will work correctly.
-#         Each command will be called directly when used and when calling execute() will only return the # result stack.
-#     """
-#     if shard_hint:
-#         raise RedisClusterException(
-#             "shard_hint is deprecated in cluster mode")
-#
-#     if transaction:
-#         raise RedisClusterException(
-#             "transaction is deprecated in cluster mode")
-#
-#     return GeeClusterPipeline(
-#         connection_pool=self.connection_pool,
-#         startup_nodes=self.connection_pool.nodes.startup_nodes,
-#         result_callbacks=self.result_callbacks,
-#         response_callbacks=self.response_callbacks,
-#     )
+def acquire_lock(client: RedisSingleton, lock_name: str, acquire_time=20, time_out=15):
+    """
+    获取一个分布式锁
 
+    :param client: redis客户端
+    :param lock_name: 分布式锁名称
+    :param acquire_time: 等待锁的时间
+    :param time_out: 锁的超时时间
+    :return: 如果成功拿到锁就返回一个锁的标识，否则就返回False
+    """
 
-def acquire_lock(client, lock_name, acquire_time=20, time_out=15):
-    """获取一个分布式锁"""
     identifier = str(uuid.uuid4())
     end = time.time() + acquire_time
     lock = lock_name
@@ -111,8 +90,15 @@ def acquire_lock(client, lock_name, acquire_time=20, time_out=15):
         client.expire(lock, time_out)
 
 
-def release_lock(client, lock_name, identifier):
-    """通用的锁释放函数"""
+def release_lock(client: RedisSingleton, lock_name: str, identifier: str)-> bool:
+    """
+    通用的锁释放函数
+
+    :param client: redis客户端
+    :param lock_name: 锁的名称
+    :param identifier: 锁的标识
+    :return: 如果成功释放锁就返回True,否则返回False
+    """
     lock = lock_name
     pip = client.pipeline()
     while True:

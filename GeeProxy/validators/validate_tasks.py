@@ -1,10 +1,10 @@
-'''
+"""
 @Author: John
 @Date: 2020-03-02 17:14:07
 @LastEditors: John
 @LastEditTime: 2020-03-10 19:54:48
 @Description: 定时校验任务
-'''
+"""
 
 import time
 import asyncio
@@ -17,14 +17,13 @@ from GeeProxy.settings import VALIDATE_QUEUE_KEY, PUBLISH_LOCK
 
 async def validate_task():
     """
-        定时代理校验任务
+    定时代理校验任务
     """
     tasks = []
     result = None
     proxy = client.rpop(VALIDATE_QUEUE_KEY)
     while proxy:
-        proxy_validator.info(
-            "This proxy {} has joined the validation task.".format(proxy))
+        proxy_validator.info("This proxy {} has joined the validation task.".format(proxy))
         tasks.extend(get_vaildator_task(proxy))
         proxy = client.rpop(VALIDATE_QUEUE_KEY)
         time.sleep(0.5)
@@ -57,7 +56,7 @@ async def validate_task():
 
 def validate_runner():
     """
-        启动校验任务
+    启动校验任务
     """
     loop = asyncio.get_event_loop()
     if loop.is_closed():
@@ -69,7 +68,7 @@ def validate_runner():
 
 def subscribe_validator():
     """
-        待校验队列
+    待校验队列
     """
     while True:
         time.sleep(3)

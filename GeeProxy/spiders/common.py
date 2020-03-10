@@ -20,12 +20,8 @@ from GeeProxy.utils.redis_cli import client
 class BaseSpider(RedisSpider):
     def __init__(self, *args, **kwargs):
         super(BaseSpider, self).__init__(*args, **kwargs)
-        # self.redis_batch_size = 10
-        # self.server = client
-        # self.redis_key = kwargs["redis_key"]
         self.name = kwargs["name"]
         self.allowed_domains = kwargs["allowed_domains"]
-        # self.start_urls = kwargs["start_urls"]
         self.table_xpath_expression = kwargs["table_xpath_expression"]
         self.ip_expression = kwargs["ip_xpath_expression"]
         self.port_expression = kwargs["port_xpath_expression"]
@@ -39,11 +35,6 @@ class BaseSpider(RedisSpider):
                                   self.protocol_xpath_expression)
         for item in items:
             yield item
-        # 翻页
-        # next_page = response.xpath(self.next_page).extract()
-        # if next_page:
-        #     next_page = get_web_index(response.url) + next_page[0]
-        #     scrapy.Request(next_page, callback=self.parse)
 
     def common_parse(self, response, table_xpath_expression, ip_expression,
                      port_expression, protocol_xpath_expression):
@@ -52,7 +43,9 @@ class BaseSpider(RedisSpider):
             # 先拿到数据表
             table = response.xpath(table_xpath_expression).extract()
             if not table:
-                crawler_logger.error("Getting table fail from {} while using {}.".format(response.url,table_xpath_expression))
+                crawler_logger.error(
+                    "Getting table fail from {} while"
+                    " using {}.".format(response.url, table_xpath_expression))
                 return items
             table = table[0]
             # ip列表
@@ -60,8 +53,7 @@ class BaseSpider(RedisSpider):
             # 端口
             ports = ""
             # 协议
-            protocols = Selector(
-                text=table).xpath(protocol_xpath_expression).extract()
+            protocols = Selector(text=table).xpath(protocol_xpath_expression).extract()
             if port_expression:
                 ports = Selector(text=table).xpath(port_expression).extract()
         except Exception as e:
@@ -78,21 +70,23 @@ class BaseSpider(RedisSpider):
                 protocol = protocols[index]
                 if "http" in protocol or "HTTP" in protocol:
                     items.append(
-                        GeeproxyItem(url=construct_proxy_url(
-                            "http", ip, port),
-                                     ip=ip,
-                                     protocol="http",
-                                     port=port))
+                        GeeproxyItem(
+                            url=construct_proxy_url("http", ip, port),
+                            ip=ip,
+                            protocol="http",
+                            port=port)
+                    )
                 if "https" in protocol or "HTTPS" in protocol:
                     items.append(
                         GeeproxyItem(url=construct_proxy_url("https", ip, port),
                                      ip=ip,
                                      protocol="https",
-                                     port=port))
+                                     port=port)
+                    )
         except Exception as e:
             crawler_logger.error({
                 "url": response.url,
-                "error": e.args,
+                "error": str(e),
                 "ips": ips
             })
             return items

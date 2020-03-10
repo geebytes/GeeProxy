@@ -10,7 +10,7 @@ from scrapy.downloadermiddlewares.useragent import UserAgentMiddleware
 from scrapy.utils.response import response_status_message
 from GeeProxy.utils.user_agent import UserAgent
 from GeeProxy.utils.logger import middlewares_logger
-from GeeProxy.utils.tools import get_web_index,  get_proxy, update_proxy, del_proxy
+from GeeProxy.utils.tools import get_web_index,  get_proxy,update_proxy, del_proxy
 from GeeProxy.settings import PROXY_REQUEST_DELAY, DEFAULT_PROXY
 
 
@@ -35,15 +35,9 @@ class GeeproxySpiderMiddleware(object):
             delay = response.meta['download_latency']
             web = get_web_index(url)
             if PROXY_REQUEST_DELAY > delay:
-                # coro = AvailableProxy.update_proxy_delay(proxy, web, delay)
-                # run_sync(coro)
-                update_proxy(proxy,web,delay)
+                update_proxy(proxy, web, delay)
             else:
-                del_proxy(proxy,DEFAULT_PROXY)
-                # proxy_client = AvailableProxy()
-#
-# coro = proxy_client.delete_proxy(proxy, DEFAULT_PROXY)
-# run_sync(coro)
+                del_proxy(proxy, DEFAULT_PROXY)
         return None
 
     def process_spider_output(self, response, result, spider):
