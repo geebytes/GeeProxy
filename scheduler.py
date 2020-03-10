@@ -1,12 +1,14 @@
-'''
+"""
 @Author: John
 @Date: 2020-03-02 18:17:27
 @LastEditors: John
-@LastEditTime: 2020-03-10 19:40:09
-@Description: 调度器,正式执行任务前,调度函数会创建大小为5的进程池,
-              这些进程分别执行定时数据抓取、定时校验、及数据处理等
-              任务。
-'''
+@LastEditTime: 2020-03-10 21:55:52
+@Description:
+
+调度器,正式执行任务前,调度函数会创建大小为5的进程池,
+这些进程分别执行定时数据抓取、定时校验、及数据处理等任务。
+
+"""
 
 import os
 import asyncio
@@ -26,11 +28,10 @@ from GeeProxy.validators.items_vaildate import item_vaildator_runner
 
 
 def run_crawl(master):
-    '''
-        运行爬虫程序
-    '''
-    scheduler_logger.info("Starting runs spiders process with PID {}.".format(
-        os.getpid()))
+    """
+    运行爬虫程序
+    """
+
     if not check_api_server():
         scheduler_logger.error("API SERVER ERROR")
         os._exit(0)
@@ -45,37 +46,41 @@ def run_crawl(master):
 
 def run_item_vaildate():
     """
-        数据项可用性及匿名性校验
+    数据项可用性及匿名性校验
+
     """
+
     item_vaildator_runner()
 
 
 def run_validate_pub():
-    '''
-        待校验代理入队列
-    '''
-    scheduler_logger.info(
-        "Starting runs validator publish process with PID {}.".format(
-            os.getpid()))
+    """
+    待校验代理入队列
+
+    """
+
     vaildate_pub()
 
 
 def run_validate_subscribe():
-    '''
-       监听代理校验任务
-    '''
-    scheduler_logger.info(
-        "Starting runs validator subscribe process with PID {}.".format(
-            os.getpid()))
+    """
+    监听代理校验任务
+
+    """
+
     subscribe_validator()
 
 
-def run_cronjob(master, crawl, vaildator):
+def run_cronjob(master: bool, crawl: bool, vaildator: bool):
     """
-        执行数据抓取及校验定时任务
+    执行数据抓取及校验定时任务
+
+    :param master: 是否是主节点
+    :param crawl: 是否运行爬虫
+    :param vaildator: 是否运行校验器
+
     """
-    scheduler_logger.info("Starting runs cronjob process with PID {}.".format(
-        os.getpid()))
+
     sched = BlockingScheduler()
     if vaildator and master:
         sched.add_job(run_validate_pub,
@@ -86,7 +91,7 @@ def run_cronjob(master, crawl, vaildator):
                       args=[master],
                       trigger='interval',
                       seconds=PROXY_UPDATE_TIME,
-                      next_run_time=datetime.datetime.now(),
+                      next_run_time=datetime.datetime.now(),  # 立刻执行
                       max_instances=5)
     try:
         if sched.get_jobs():
@@ -115,19 +120,15 @@ def run_cronjob(master, crawl, vaildator):
     help="Start API Server",
 )
 def scheduleder(master, crawl, vaildator, app):
-    '''
-       主调度器
-    '''
-    master = os.environ.get("MASTER", "") if os.environ.get("MASTER",
-                                                            "") else master
-    crawl = os.environ.get("CRAWL", "") if os.environ.get("CRAWL",
-                                                          "") else crawl
-    vaildator = os.environ.get("VAILDATOR", "") if os.environ.get(
-        "MASTER", "") else vaildator
-    app = os.environ.get("APP", "") if os.environ.get("MASTER", "") else app
-    scheduler_logger.info(
-        "Master value is {},crawl value is {},vaildator value is {}".format(
-            master, crawl, vaildator))
+    """
+    主调度器
+    """
+    master = os.environ.get("MASTER", "") if os.environ.get("MASTER", "") else master
+    crawl = os.environ.get("CRAWL", "") if os.environ.get("CRAWL", "") else crawl
+    vaildator = os.environ.get("VAILDATOR", "") if os.environ.get("VAILDATOR", "") else vaildator
+    app = os.environ.get("APP", "") if os.environ.get("APP", "") else app
+    scheduler_logger.info("Master value is {},crawl value is {},"
+                          "vaildator value is {}".format(master, crawl, vaildator))
     pool = mp.Pool(5)
     if not master:
         pool.apply_async(run_validate_subscribe)
@@ -140,5 +141,4 @@ def scheduleder(master, crawl, vaildator, app):
 
 
 if __name__ == "__main__":
-    scheduler_logger.info('Main process PID is %d.' % os.getpid())
     scheduleder()
