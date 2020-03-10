@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2020-03-01 11:43:19
 @LastEditors: John
-@LastEditTime: 2020-03-10 11:48:23
+@LastEditTime: 2020-03-10 20:03:21
 @Description: This module provides redis connect pool sigleton client
 '''
 import os
@@ -13,7 +13,7 @@ from rediscluster import RedisCluster
 from rediscluster.connection import ClusterConnectionPool
 from redis.client import Redis
 from redis import ConnectionPool
-from GeeProxy.settings import REDIS_CLUSTER, REDIS_MASTER_NODES
+from GeeProxy.settings import REDIS_CLUSTER, REDIS_MASTER_NODES, REDIS_PASSWORD
 
 
 class GeeClusterPipeline(ClusterPipeline):
@@ -50,11 +50,13 @@ class RedisSingleton(RedisCluster, Redis):
             if REDIS_CLUSTER:
                 pool = ClusterConnectionPool(*args, **kwargs)
                 cls._instance = RedisCluster(connection_pool=pool,
-                                             decode_responses=True)
+                                             decode_responses=True,
+                                             password=REDIS_PASSWORD
+                                             )
                 cls._pid = pid
             else:
                 pool = ConnectionPool(*args, **kwargs)
-                cls._instance = Redis(connection_pool=pool)
+                cls._instance = Redis(connection_pool=pool, password=REDIS_PASSWORD)
                 cls._pid = pid
         return cls._instance
 
@@ -105,7 +107,7 @@ def acquire_lock(client, lock_name, acquire_time=20, time_out=15):
                 client.expire(lock, time_out)
             time.sleep(0.001)
         return False
-    except Exception as e:
+    except Exception:
         client.expire(lock, time_out)
 
 

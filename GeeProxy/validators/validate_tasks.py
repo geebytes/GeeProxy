@@ -2,23 +2,22 @@
 @Author: John
 @Date: 2020-03-02 17:14:07
 @LastEditors: John
-@LastEditTime: 2020-03-10 00:14:06
+@LastEditTime: 2020-03-10 19:54:48
 @Description: 定时校验任务
 '''
-import asyncio
-import time
-from GeeProxy.settings import VALIDATE_CHANNEL,\
-     VALIDATE_QUEUE_KEY,PUBLISH_LOCK, PROXY_VALIDATE_TIME
 
+import time
+import asyncio
 from GeeProxy.utils.redis_cli import client
 from GeeProxy.utils.logger import proxy_validator
 from GeeProxy.client.client import AvailableProxy
 from GeeProxy.utils.tools import get_vaildator_task
+from GeeProxy.settings import VALIDATE_QUEUE_KEY, PUBLISH_LOCK
 
 
 async def validate_task():
     """
-    定时代理校验任务
+        定时代理校验任务
     """
     tasks = []
     result = None
@@ -45,11 +44,12 @@ async def validate_task():
                         res.proxy, res.web_key))
                 else:
                     proxy_validator.info("update proxy {}".format(res.proxy))
-                    await AvailableProxy.update_proxy_delay(res.proxy, res.dst,
-                                                      res.delay)
+                    await AvailableProxy.update_proxy_delay(
+                        res.proxy, res.dst, res.delay)
             except Exception as e:
                 proxy_validator.error(
-                    "An exception {} occurred while checking proxy {} availability.".format(e, res.proxy))
+                    "An exception {} occurred while checking proxy {} availability."
+                    .format(e, res.proxy))
             finally:
                 client.delete(PUBLISH_LOCK)
     return result
@@ -57,12 +57,11 @@ async def validate_task():
 
 def validate_runner():
     """
-    启动校验任务
+        启动校验任务
     """
     loop = asyncio.get_event_loop()
-    new_loop = None
     if loop.is_closed():
-       loop = asyncio.new_event_loop()
+        loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     loop.run_until_complete(validate_task())
     loop.close()
@@ -70,7 +69,7 @@ def validate_runner():
 
 def subscribe_validator():
     """
-    待校验队列
+        待校验队列
     """
     while True:
         time.sleep(3)

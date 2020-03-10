@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2020-03-04 13:09:06
 @LastEditors: John
-@LastEditTime: 2020-03-10 17:28:37
+@LastEditTime: 2020-03-10 19:56:41
 @Description: 提供代理查询、删除接口
 '''
 import time
@@ -111,7 +111,7 @@ class AvailableProxy:
         """
             添加代理，主要逻辑是，判断hash表中是否已经存在该代理，
             若不存在就将对应数据存入,否则就在该代理的hash对象中加上
-            以目标网站地址的字段并以延迟为值。
+            以目标网站地址的字段并以延迟为值,引用计数器加1。
         """
         mapping = data.__dict__
         try:
@@ -159,7 +159,7 @@ class AvailableProxy:
     @staticmethod
     async def update_proxy_delay(proxy: str, dst: str, delay: float) -> bool:
         """
-        更新代理对目标站点的延迟
+            更新代理对目标站点的延迟
         """
         key = ITEM_HASH_KEY.format(proxy=proxy)
         lock_name = PROXY_LOCK.format(key)

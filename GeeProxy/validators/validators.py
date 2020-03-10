@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2020-03-01 18:33:41
 @LastEditors: John
-@LastEditTime: 2020-03-10 13:26:04
+@LastEditTime: 2020-03-10 19:51:30
 @Description: 代理校验器
 '''
 import os
@@ -148,7 +148,7 @@ class ProxyValidator:
     @staticmethod
     async def check_anonymous(proxy: str) -> bool:
         """
-        检测代理的匿名程度
+            检测代理的匿名程度
         """
         anonymous = True
         try:
@@ -176,7 +176,7 @@ class ProxyValidator:
     @staticmethod
     def is_anonymous(response: dict) -> bool:
         """
-        通过接口判断当前代理的可匿程度
+            通过接口判断当前代理的可匿程度
         """
         origin = response["origin"]
         proxy_connection = response.get("Proxy-Connection", "")

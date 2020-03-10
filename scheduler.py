@@ -2,8 +2,10 @@
 @Author: John
 @Date: 2020-03-02 18:17:27
 @LastEditors: John
-@LastEditTime: 2020-03-10 18:35:06
-@Description: 调度器
+@LastEditTime: 2020-03-10 19:40:09
+@Description: 调度器,正式执行任务前,调度函数会创建大小为5的进程池,
+              这些进程分别执行定时数据抓取、定时校验、及数据处理等
+              任务。
 '''
 
 import os
@@ -21,12 +23,6 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from GeeProxy.validators.validate_tasks import subscribe_validator
 from GeeProxy.settings import PROXY_VALIDATE_TIME, PROXY_UPDATE_TIME
 from GeeProxy.validators.items_vaildate import item_vaildator_runner
-
-# def exit_process(process):
-#     """退出子进程"""
-#     @wraps
-#     def wrapper(*args, **kwargs):
-#         pass
 
 
 def run_crawl(master):
@@ -48,6 +44,9 @@ def run_crawl(master):
 
 
 def run_item_vaildate():
+    """
+        数据项可用性及匿名性校验
+    """
     item_vaildator_runner()
 
 
@@ -72,6 +71,9 @@ def run_validate_subscribe():
 
 
 def run_cronjob(master, crawl, vaildator):
+    """
+        执行数据抓取及校验定时任务
+    """
     scheduler_logger.info("Starting runs cronjob process with PID {}.".format(
         os.getpid()))
     sched = BlockingScheduler()
@@ -103,7 +105,9 @@ def run_cronjob(master, crawl, vaildator):
 @click.option(
     "--vaildator/--no-vaildator",
     default=True,
-    help="Do you run a proxy vailator?\nIf it is used as a message queue publisher, be sure to add the '--master' parameter.",
+    help="Do you run a proxy vailator? \
+          If it is used as a message queue publisher, \
+          be sure to add the '--master' parameter.",
 )
 @click.option(
     "--app/--no-app",
@@ -114,11 +118,13 @@ def scheduleder(master, crawl, vaildator, app):
     '''
        主调度器
     '''
-    master = os.environ.get("MASTER", "") if os.environ.get("MASTER", "") else master
-    crawl = os.environ.get("CRAWL", "") if os.environ.get("CRAWL", "") else crawl
-    vaildator = os.environ.get("VAILDATOR", "") if os.environ.get("MASTER", "") else vaildator
+    master = os.environ.get("MASTER", "") if os.environ.get("MASTER",
+                                                            "") else master
+    crawl = os.environ.get("CRAWL", "") if os.environ.get("CRAWL",
+                                                          "") else crawl
+    vaildator = os.environ.get("VAILDATOR", "") if os.environ.get(
+        "MASTER", "") else vaildator
     app = os.environ.get("APP", "") if os.environ.get("MASTER", "") else app
-    
     scheduler_logger.info(
         "Master value is {},crawl value is {},vaildator value is {}".format(
             master, crawl, vaildator))
@@ -134,6 +140,5 @@ def scheduleder(master, crawl, vaildator, app):
 
 
 if __name__ == "__main__":
-    # parent_conn, child_conn = Pipe()
     scheduler_logger.info('Main process PID is %d.' % os.getpid())
     scheduleder()

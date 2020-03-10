@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2020-03-01 02:10:32
 @LastEditors: John
-@LastEditTime: 2020-03-10 17:22:09
+@LastEditTime: 2020-03-10 19:59:39
 @Description: 配置文件
 '''
 # -*- coding: utf-8 -*-
@@ -246,7 +246,7 @@ WEB_TRANSPARENT_PROXY = {
 }
 
 # 抓取数据过程中使用的默认代理
-DEFAULT_PROXY = "http"
+DEFAULT_PROXY = "https"
 
 # 在删、改代理字段操作时加锁
 PROXY_LOCK = "lock:proxy:{}"

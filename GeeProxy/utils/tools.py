@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2020-03-02 02:44:01
 @LastEditors: John
-@LastEditTime: 2020-03-10 10:59:38
+@LastEditTime: 2020-03-10 21:27:55
 @Description: 常用工具
 '''
 import json
@@ -58,8 +58,7 @@ def get_proxy(usage: str):
 def del_proxy(proxy: str, web_key: str):
 
     url = API_SERVER + "/proxy?usage={}&proxy={}".format(web_key, proxy)
-
-    res = requests.delete(url, timeout=5)
+    requests.delete(url, timeout=5)
 
 
 def update_proxy(proxy: str, web: str, delay: float):
@@ -80,7 +79,6 @@ def is_check_anonymous(dst_web: str) -> bool:
     dst_domian = get_domain(dst_web)
     api_domian = get_domain(ANONYMOUS_CHECK_API)
     if dst_domian == api_domian:
-        print("check anonymous")
         return True
     else:
         return False
@@ -92,11 +90,13 @@ def get_cache_key(web_key: str) -> str:
 
 def get_vaildator_task(proxy: str) -> list:
     tasks = []
+    keys = VAILDATORS.keys()
     for k, v in WEB_AVAILABLE_PROXIES.items():
         vaildator = ProxyValidator()
         # 开始校验
+        if v not in keys:
+            continue
         task = vaildator.check_proxy(proxy=proxy, dst=VAILDATORS[v], web_key=k)
-        # task = asyncio.ensure_future(vaildator.check_proxy(proxy=proxy, dst=VAILDATORS[v], web_key=k))
         tasks.append(task)
     return tasks
 
