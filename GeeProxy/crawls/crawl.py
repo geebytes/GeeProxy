@@ -2,19 +2,15 @@
 @Author: John
 @Date: 2020-03-01 17:13:49
 @LastEditors: John
-@LastEditTime: 2020-03-10 10:40:20
+@LastEditTime: 2020-03-10 13:42:02
 @Description: 爬虫启动脚本
 '''
-import asyncio
-from scrapy.utils.reactor import install_reactor
-from scrapy.crawler import CrawlerProcess, CrawlerRunner
-from twisted.internet import asyncioreactor
+from scrapy.crawler import CrawlerRunner
 from scrapy.utils.project import get_project_settings
 from GeeProxy.spiders.common import BaseSpider
 from GeeProxy.spiders.rules import COMMON_CRAWL_RULES
-from GeeProxy.utils.logger import crawler_logger
-from twisted.internet import defer, reactor
-from multiprocessing import Process, Queue
+from twisted.internet import reactor
+from multiprocessing import Queue
 
 # asyncioreactor.install(asyncio.get_event_loop())
 
@@ -32,7 +28,7 @@ def crawl_runner(q: Queue):
         q.put(None)
         q.get()
         q.close()
-        q.join_thread()
+        # q.join_thread()
     except Exception as e:
         q.put(e)
 

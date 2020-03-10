@@ -2,13 +2,12 @@
 @Author: John
 @Date: 2020-03-01 11:29:03
 @LastEditors: John
-@LastEditTime: 2020-03-10 10:25:18
+@LastEditTime: 2020-03-10 11:44:32
 @Description: 代理抓取主程序
 主要的实现思路是，先拿到页面的Table，然后进一步解析拿到的Table，分别提取端口、IP、协议
 '''
 
 # -*- coding: utf-8 -*-
-import scrapy
 
 from scrapy_redis_cluster.spiders import RedisSpider
 from GeeProxy.items import GeeproxyItem
@@ -21,9 +20,9 @@ from GeeProxy.utils.redis_cli import client
 class BaseSpider(RedisSpider):
     def __init__(self, *args, **kwargs):
         super(BaseSpider, self).__init__(*args, **kwargs)
-        self.redis_batch_size = 10
-        self.server = client
-        self.redis_key = kwargs["redis_key"]
+        # self.redis_batch_size = 10
+        # self.server = client
+        # self.redis_key = kwargs["redis_key"]
         self.name = kwargs["name"]
         self.allowed_domains = kwargs["allowed_domains"]
         # self.start_urls = kwargs["start_urls"]

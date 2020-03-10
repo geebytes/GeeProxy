@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2020-03-03 12:24:30
 @LastEditors: John
-@LastEditTime: 2020-03-10 02:02:01
+@LastEditTime: 2020-03-10 13:41:18
 @Description: 发布消息，待校验代理入队列
 '''
 
@@ -22,14 +22,8 @@ def vaildate_pub():
             client.expire(PUBLISH_LOCK, PROXY_VALIDATE_TIME * 2)
             pipe = client.pipeline()
             # 获取所有的代理
-            # proxy_keys = client.keys(PROXY_KEY_PATTERN)
             keys = (v for k, v in WEB_AVAILABLE_PROXIES.items())
             proxy_keys = client.sunion(*keys)
-            print(proxy_keys)
-            # for proxy in proxy_keys:
-            #     pipe.hget(proxy, "url")
-            #     proxy_validator.info("proxy key {} ready vildate".format(proxy))
-            # proxies = pipe.execute()
             for proxy in proxy_keys:
                 if proxy is not None:
                     pipe.lpush(VALIDATE_QUEUE_KEY, proxy)

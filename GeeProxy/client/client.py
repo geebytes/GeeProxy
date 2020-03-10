@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2020-03-04 13:09:06
 @LastEditors: John
-@LastEditTime: 2020-03-10 00:01:03
+@LastEditTime: 2020-03-10 17:28:37
 @Description: 提供代理查询、删除接口
 '''
 import time
@@ -121,6 +121,8 @@ class AvailableProxy:
             cache_key = get_cache_key(data.web_key)
             if item["anonymous"] or WEB_TRANSPARENT_PROXY[data.web_key]:
                 client.sadd(cache_key, data.proxy)
+            protoclo_key = WEB_AVAILABLE_PROXIES[item["protocol"]]
+            client.sadd(protoclo_key, data.proxy)
             key = ITEM_HASH_KEY.format(proxy=data.proxy)
             client_logger.info("Cache proxy '{}' to '{}'".format(
                 data.proxy, cache_key))

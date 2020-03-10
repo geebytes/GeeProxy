@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2020-03-02 18:17:27
 @LastEditors: John
-@LastEditTime: 2020-03-10 11:04:31
+@LastEditTime: 2020-03-10 13:42:56
 @Description: 调度器
 '''
 
@@ -42,7 +42,7 @@ def run_crawl(master):
         input_start_urls()
     new_loop = asyncio.new_event_loop()
     asyncio.set_event_loop(new_loop)
-    loop = asyncio.get_event_loop()
+    asyncio.get_event_loop()
     q = mp.Queue()
     crawl_runner(q)
 
@@ -84,7 +84,8 @@ def run_cronjob(master, crawl, vaildator):
                       args=[master],
                       trigger='interval',
                       seconds=PROXY_UPDATE_TIME,
-                      next_run_time=datetime.datetime.now())
+                      next_run_time=datetime.datetime.now(),
+                      max_instances=5)
     try:
         if sched.get_jobs():
             sched.start()

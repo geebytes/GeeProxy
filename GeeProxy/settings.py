@@ -2,7 +2,7 @@
 @Author: John
 @Date: 2020-03-01 02:10:32
 @LastEditors: John
-@LastEditTime: 2020-03-10 10:26:02
+@LastEditTime: 2020-03-10 17:22:09
 @Description: 配置文件
 '''
 # -*- coding: utf-8 -*-
@@ -109,7 +109,7 @@ ITEM_PIPELINES = {
 REDIS_CLUSTER = True
 
 # 集群节点
-REDIS_NODES = [
+REDIS_MASTER_NODES = [
     {
         'host': '192.168.0.3',
         'port': 7000
@@ -136,9 +136,8 @@ REDIS_NODES = [
     },
 ]
 
-REDIS_START_URLS_BATCH_SIZE = 16
+REDIS_START_URLS_BATCH_SIZE = 32
 
-REDIS_MASTER_NODES = REDIS_NODES
 # redis密码
 REDIS_PASSWORD = ""
 
@@ -170,17 +169,17 @@ VAILDATORS = {
     "proxy:xiladaili": "http://www.xiladaili.com",
     "proxy:xicidaili": "https://www.xicidaili.com",
     "proxy:kuaidaili": "https://www.kuaidaili.com",
-    "proxy:https": "https://httpbin.org",
-    "proxy:http": "http://httpbin.org",
+    # "proxy:https": "https://httpbin.org",
+    # "proxy:http": "http://httpbin.org",
     "proxy:imooc": "https://www.imooc.com/",
     "proxy:ip3366": "http://www.ip3366.net"
 }
 # 校验器代理请求超时时间
 VAILDATORS_TIMEOUT = 5
 # 校验器的代理尝试重连次数
-VAILDATORS_RETRY = 2
+VAILDATORS_RETRY = 3
 # 代理请求失败的最大次数
-PROXY_THRESHOLD = 2
+PROXY_THRESHOLD = 3
 # 定时校验任务时间间隔
 PROXY_VALIDATE_TIME = 20 * 60
 # 允许校验代理请求的最大延迟时间 s
@@ -215,13 +214,13 @@ WEB_AVAILABLE_PROXIES = {
 PUBLIC_IP = "116.9.190.2"
 if not PUBLIC_IP:
     try:
-        PUBLIC_IP = requests.get("https://httpbin.org/ip",timeout=10).json()["origin"]
+        PUBLIC_IP = requests.get("https://httpbin.org/ip", timeout=10).json()["origin"]
         print("公网ip为{}".format(PUBLIC_IP))
     except Exception:
         print("获取本机公网ip失败")
         os._exit(0)
 # 代理更新抓取任务时间间隔
-PROXY_UPDATE_TIME = 60 * 60 * 30
+PROXY_UPDATE_TIME = 30 * 60 * 1
 
 # 代理可匿程度检测接口
 ANONYMOUS_CHECK_API = "https://httpbin.org/get"
@@ -246,18 +245,21 @@ WEB_TRANSPARENT_PROXY = {
     "ip3366": False
 }
 
-DEFAULT_PROXY = "https"
+# 抓取数据过程中使用的默认代理
+DEFAULT_PROXY = "http"
 
+# 在删、改代理字段操作时加锁
 PROXY_LOCK = "lock:proxy:{}"
 
-ASYNCIO_ENABLED = True
-
+# 待校验数据项
 ITEM_VAILDATE_SET = "vaildate:proxy:set"
 
 # TWISTED_REACTOR="twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 
+
+
 try:
-    from dev_config import *
+    from GeeProxy.dev_config import *
 except ImportError:
     print("use dev config file")
     pass
