@@ -1,7 +1,7 @@
 """
-@Author: John
+@Author: qinzhonghe96@163.com
 @Date: 2020-03-02 17:14:07
-@LastEditors: John
+@LastEditors: qinzhonghe96@163.com
 @LastEditTime: 2020-03-10 19:54:48
 @Description: 定时校验任务
 """

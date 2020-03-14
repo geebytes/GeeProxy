@@ -1,7 +1,7 @@
 """
-@Author: John
+@Author: qinzhonghe96@163.com
 @Date: 2020-03-09 16:48:20
-@LastEditors: John
+@LastEditors: qinzhonghe96@163.com
 @LastEditTime: 2020-03-10 03:45:46
 @Description: 校验爬取到的代理数据项的可用性和匿名程度
 """

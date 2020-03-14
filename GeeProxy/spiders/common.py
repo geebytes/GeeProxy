@@ -1,11 +1,11 @@
-'''
-@Author: John
+"""
+@Author: qinzhonghe96@163.com
 @Date: 2020-03-01 11:29:03
-@LastEditors: John
+@LastEditors: qinzhonghe96@163.com
 @LastEditTime: 2020-03-10 11:44:32
 @Description: 代理抓取主程序
 主要的实现思路是，先拿到页面的Table，然后进一步解析拿到的Table，分别提取端口、IP、协议
-'''
+"""
 
 # -*- coding: utf-8 -*-
 
@@ -14,7 +14,6 @@ from GeeProxy.items import GeeproxyItem
 from scrapy.selector import Selector
 from GeeProxy.utils.logger import crawler_logger
 from GeeProxy.utils.tools import construct_proxy_url
-from GeeProxy.utils.redis_cli import client
 
 
 class BaseSpider(RedisSpider):

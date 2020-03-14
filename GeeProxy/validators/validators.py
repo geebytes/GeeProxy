@@ -1,7 +1,7 @@
 '''
-@Author: John
+@Author: qinzhonghe96@163.com
 @Date: 2020-03-01 18:33:41
-@LastEditors: John
+@LastEditors: qinzhonghe96@163.com
 @LastEditTime: 2020-03-10 19:51:30
 @Description: 代理校验器
 '''

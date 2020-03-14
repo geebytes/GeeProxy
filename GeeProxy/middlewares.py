@@ -10,7 +10,7 @@ from scrapy.downloadermiddlewares.useragent import UserAgentMiddleware
 from scrapy.utils.response import response_status_message
 from GeeProxy.utils.user_agent import UserAgent
 from GeeProxy.utils.logger import middlewares_logger
-from GeeProxy.utils.tools import get_web_index,  get_proxy,update_proxy, del_proxy
+from GeeProxy.utils.tools import get_web_index,  get_proxy, update_proxy, del_proxy
 from GeeProxy.settings import PROXY_REQUEST_DELAY, DEFAULT_PROXY
 
 
@@ -137,7 +137,7 @@ class ProxyRetryMiddleware(RetryMiddleware):
     def delete_proxy(self, url, proxy):
         if proxy:
             # proxy_client = AvailableProxy()
-            #coro = proxy_client.delete_proxy(proxy, DEFAULT_PROXY)
+            # coro = proxy_client.delete_proxy(proxy, DEFAULT_PROXY)
             del_proxy(proxy, DEFAULT_PROXY)
             # run_sync(coro)
 
@@ -145,7 +145,7 @@ class ProxyRetryMiddleware(RetryMiddleware):
         if response.status in self.retry_http_codes:
             reason = response_status_message(response.status)
             # 删除该代理
-            self.delete_proxy(request.url,request.meta.get('proxy', False))
+            self.delete_proxy(request.url, request.meta.get('proxy', False))
             # run_sync(coro)
 
             return self._retry(request, reason, spider) or response

@@ -1,7 +1,7 @@
 '''
-@Author: John
+@Author: qinzhonghe96@163.com
 @Date: 2019-08-31 16:28:27
-@LastEditors: John
+@LastEditors: qinzhonghe96@163.com
 @LastEditTime: 2020-03-02 23:26:57
 @Description: This module provides fake ua for all spiders.
 '''
