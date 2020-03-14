@@ -2,7 +2,7 @@
 @Author: qinzhonghe96@163.com
 @Date: 2020-03-01 02:10:32
 @LastEditors: qinzhonghe96@163.com
-@LastEditTime: 2020-03-14 16:08:34
+@LastEditTime: 2020-03-14 16:28:27
 @Description: 配置文件
 '''
 # -*- coding: utf-8 -*-
@@ -111,27 +111,27 @@ REDIS_CLUSTER = True
 # 集群节点
 REDIS_MASTER_NODES = [
     {
-        'host': '192.168.0.3',
+        'host': 'redis-server',
         'port': 7000
     },
     {
-        'host': '192.168.0.3',
+        'host': 'redis-server',
         'port': 7001
     },
     {
-        'host': '192.168.0.3',
+        'host': 'redis-server',
         'port': 7002
     },
     {
-        'host': '192.168.0.3',
+        'host': 'redis-server',
         'port': 7003
     },
     {
-        'host': '192.168.0.3',
+        'host': 'redis-server',
         'port': 7004
     },
     {
-        'host': '192.168.0.3',
+        'host': 'redis-server',
         'port': 7005
     },
 ]
