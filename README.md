@@ -2,7 +2,7 @@
  * @Author: qinzhonghe96@163.com
  * @Date: 2020-03-14 11:46:32
  * @LastEditors: qinzhonghe96@163.com
- * @LastEditTime: 2020-03-14 13:38:48
+ * @LastEditTime: 2020-03-14 13:42:08
  * @Description: 
  -->
 ## 基于Master-Slave 架构的高可用IP代理池
@@ -28,7 +28,7 @@
 ```按照官方部署流程部署即可```
 
 2. 下载源码  
-   ```git clone https://github.com/SpiderClub/haipproxy.git```
+   ```git clone https://github.com/geebytes/GeeProxy.git```
 
 3. 安装依赖
    ```pip install -r requirements.txt```
