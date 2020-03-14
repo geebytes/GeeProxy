@@ -1,7 +1,7 @@
 """
-@Author: John
+@Author: qinzhonghe96@163.com
 @Date: 2020-03-03 12:24:30
-@LastEditors: John
+@LastEditors: qinzhonghe96@163.com
 @LastEditTime: 2020-03-10 13:41:18
 @Description: 发布消息，待校验代理入队列
 """

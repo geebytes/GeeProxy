@@ -1,7 +1,7 @@
 """
-@Author: John
+@Author: qinzhonghe96@163.com
 @Date: 2020-03-09 14:57:26
-@LastEditors: John
+@LastEditors: qinzhonghe96@163.com
 @LastEditTime: 2020-03-10 01:27:37
 @Description: 起始URLS送入队列
 """

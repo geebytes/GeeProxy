@@ -1,7 +1,7 @@
 '''
-@Author: John
+@Author: qinzhonghe96@163.com
 @Date: 2020-03-01 02:10:32
-@LastEditors: John
+@LastEditors: qinzhonghe96@163.com
 @LastEditTime: 2020-03-06 16:37:56
 @Description: 定义数据字段
 '''
