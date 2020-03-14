@@ -10,8 +10,9 @@ from scrapy.downloadermiddlewares.useragent import UserAgentMiddleware
 from scrapy.utils.response import response_status_message
 from GeeProxy.utils.user_agent import UserAgent
 from GeeProxy.utils.logger import middlewares_logger
-from GeeProxy.utils.tools import get_web_index,  get_proxy, update_proxy, del_proxy
-from GeeProxy.settings import PROXY_REQUEST_DELAY, DEFAULT_PROXY
+from GeeProxy.utils.tools import get_web_index, get_proxy, \
+     update_proxy, del_proxy, get_web_key
+from GeeProxy.settings import PROXY_REQUEST_DELAY
 
 
 class GeeproxySpiderMiddleware(object):
@@ -37,7 +38,8 @@ class GeeproxySpiderMiddleware(object):
             if PROXY_REQUEST_DELAY > delay:
                 update_proxy(proxy, web, delay)
             else:
-                del_proxy(proxy, DEFAULT_PROXY)
+                key = get_web_key(url)
+                del_proxy(proxy, key)
         return None
 
     def process_spider_output(self, response, result, spider):
@@ -123,7 +125,8 @@ class ProxyMiddleware(object):
     """
     def process_request(self, request, spider):
         # available_proxy = AvailableProxy()
-        key = DEFAULT_PROXY
+        key = get_web_key(request.url)
+        
         proxy = get_proxy(key)
         # print("url is %s" % request.url)
         if proxy:
@@ -136,10 +139,8 @@ class ProxyMiddleware(object):
 class ProxyRetryMiddleware(RetryMiddleware):
     def delete_proxy(self, url, proxy):
         if proxy:
-            # proxy_client = AvailableProxy()
-            # coro = proxy_client.delete_proxy(proxy, DEFAULT_PROXY)
-            del_proxy(proxy, DEFAULT_PROXY)
-            # run_sync(coro)
+            key = get_web_key(url)
+            del_proxy(proxy, key)
 
     def process_response(self, request, response, spider):
         if response.status in self.retry_http_codes:
@@ -155,7 +156,7 @@ class ProxyRetryMiddleware(RetryMiddleware):
         if isinstance(exception, self.EXCEPTIONS_TO_RETRY) \
                 and not request.meta.get('dont_retry', False):
             # 删除该代理
-            self.delete_proxy(request.url,request.meta.get('proxy', False))
+            self.delete_proxy(request.url, request.meta.get('proxy', False))
             # run_sync(coro)
             middlewares_logger.info('连接异常, 进行重试...')
             request.headers['User-Agent'] = UserAgent.random()

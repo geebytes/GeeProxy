@@ -19,7 +19,7 @@ services:
       - "5000:5000"
     hostname: geeproxy-master
     volumes:
-      - /data/matrix/platform/source/geelib/GeeProxy/GeeProxy/settings.py:/usr/src/app/settings.py
+      - /data/matrix/platform/source/geelib/GeeProxy/GeeProxy/docker_settings.py:/usr/src/app/settings.py
     links:
       - redis-cluster
     depends_on:

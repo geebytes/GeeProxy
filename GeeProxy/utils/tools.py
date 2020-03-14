@@ -6,11 +6,10 @@
 @Description: 常用工具
 """
 import json
-import asyncio
 import requests
 import traceback
 from urllib.parse import urlparse
-from GeeProxy.settings import ANONYMOUS_CHECK_API, WEB_AVAILABLE_PROXIES,\
+from GeeProxy.settings import WEB_AVAILABLE_PROXIES,\
     VAILDATORS, API_SERVER
 from GeeProxy.validators.validators import ProxyValidator
 
@@ -37,6 +36,18 @@ def get_domain(url: str) -> str:
     parsed_uri = urlparse(url)
     domain = '{uri.netloc}'.format(uri=parsed_uri)
     return domain
+
+
+def get_web_key(url: str) -> str:
+    """
+    通过url获取对应的web key
+   
+    :param url:目标URL
+    :return: web key
+    """
+    domian = get_domain(url)
+    if domian:
+        return domian.split(".")[1]
 
 
 def get_web_index(url: str) -> str:
