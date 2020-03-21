@@ -2,7 +2,7 @@
  * @Author: qinzhonghe96@163.com
  * @Date: 2020-03-14 11:46:32
  * @LastEditors: qinzhonghe96@163.com
- * @LastEditTime: 2020-03-14 13:51:41
+ * @LastEditTime: 2020-03-21 15:38:45
  * @Description: 
  -->
 ## 基于Master-Slave 架构的高可用IP代理池
@@ -35,16 +35,16 @@
 
 4. 修改配置项  
    
-- 根据Redis的实际配置修改项目配置文件[GeeProxy/settings.py](GeeProxy/settings.py)中的`REDIS_MASTER_NODES`、`REDIS_PASSWORD`等参数
+- 根据Redis的实际配置修改项目配置文件[settings.py](GeeProxy/settings.py)中的`REDIS_MASTER_NODES`、`REDIS_PASSWORD`等参数
 
-5. 启动
+1. 启动
 - 启动主节点: 
 - ```python scheduler.py --master --crawl --vaildator --app```
   
 - 启动从节点: 
 - ```python scheduler.py --slave --crawl --vaildator --no-app```
 
-- 注意事项: 根据实际的部署规划配置[settings.py](settings.py)中的API_SERVER参数，即app节点的服务地址
+- 注意事项: 根据实际的部署规划配置[settings.py](GeeProxy/settings.py)中的API_SERVER参数，即app节点的服务地址
 
 ## 使用方法
 - 服务启动后需要进行一段时间的预热过程

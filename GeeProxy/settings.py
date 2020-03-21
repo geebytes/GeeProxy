@@ -2,7 +2,7 @@
 @Author: qinzhonghe96@163.com
 @Date: 2020-03-01 02:10:32
 @LastEditors: qinzhonghe96@163.com
-@LastEditTime: 2020-03-14 16:08:34
+@LastEditTime: 2020-03-14 21:55:26
 @Description: 配置文件
 '''
 # -*- coding: utf-8 -*-
@@ -170,7 +170,9 @@ VAILDATORS = {
     "proxy:xicidaili": "https://www.xicidaili.com",
     "proxy:kuaidaili": "https://www.kuaidaili.com",
     "proxy:imooc": "https://www.imooc.com/",
-    "proxy:ip3366": "http://www.ip3366.net"
+    "proxy:ip3366": "http://www.ip3366.net",
+    "proxy:jikexueyuan": "https://www.jikexueyuan.com/",
+    "proxy:51cto": "https://medu.51cto.com/"
 }
 # 校验器代理请求超时时间
 VAILDATORS_TIMEOUT = 5
@@ -207,6 +209,8 @@ WEB_AVAILABLE_PROXIES = {
     "xicidaili": "proxy:xicidaili",
     "kuaidaili": "proxy:kuaidaili",
     "ip3366": "proxy:ip3366",
+    "jikexueyuan": "proxy:jikexueyuan",
+    "51cto": "proxy:51cto",
 }
 
 PUBLIC_IP = "116.9.190.2"
@@ -240,7 +244,9 @@ WEB_TRANSPARENT_PROXY = {
     "https": False,
     "http": False,
     "imooc": False,
-    "ip3366": False
+    "ip3366": False,
+    "jikexueyuan": False,
+    "51cto":False
 }
 
 # 抓取数据过程中使用的默认代理
