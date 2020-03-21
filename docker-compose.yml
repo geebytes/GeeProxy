@@ -1,0 +1,41 @@
+version: "2.0"
+services:
+  redis-cluster:
+    network_mode: host
+    environment:
+     IP: 192.168.5.10
+     SENTINEL: ${REDIS_USE_SENTINEL}
+     STANDALONE: ${REDIS_USE_STANDALONE}
+    image: registry.cn-beijing.aliyuncs.com/geebytes/redis-cluster:0.0.1
+    hostname: redis-server
+
+  geeproxy-master:
+    image: registry.cn-beijing.aliyuncs.com/geebytes/geeproxy:0.0.1
+    command:
+      - --master
+      - --app
+      - --vaildator
+    ports:
+      - "5000:5000"
+    hostname: geeproxy-master
+    volumes:
+      - /data/matrix/platform/source/geelib/GeeProxy/GeeProxy/docker_settings.py:/usr/src/app/settings.py
+    links:
+      - redis-cluster
+    depends_on:
+      - redis-cluster
+  
+  geeproxy-slave:
+    image: registry.cn-beijing.aliyuncs.com/geebytes/geeproxy:0.0.1
+    command:
+      - --slave
+      - --app
+      - --vaildator
+    volumes:
+      - /data/matrix/platform/source/geelib/GeeProxy/GeeProxy/docker_settings.py:/usr/src/app/settings.py
+    links:
+      - redis-cluster
+      - geeproxy-master
+    depends_on:
+      - redis-cluster
+      - geeproxy-master
