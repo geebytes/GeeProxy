@@ -1,4 +1,4 @@
-aiohttp==3.6.2
+aiohttp==3.7.4
 aiohttp-proxy==0.1.2
 APScheduler==3.6.3
 Click==7.0
